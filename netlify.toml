@@ -1,0 +1,8 @@
+# Configuration de la mise en ligne sur Netlify
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+[build.environment]
+  # Astro 7 a besoin d'une version récente de Node.js
+  NODE_VERSION = "24"
