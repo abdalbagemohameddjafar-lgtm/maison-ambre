@@ -15,9 +15,9 @@ export const societe = {
 };
 
 export const hebergeur = {
-  nom: "Netlify, Inc.",
-  adresse: "101 2nd Street, San Francisco, CA 94105, États-Unis",
-  site: "www.netlify.com",
+  nom: "Cloudflare, Inc.",
+  adresse: "101 Townsend Street, San Francisco, CA 94107, États-Unis",
+  site: "www.cloudflare.com",
 };
 
 export const majLe = "4 novembre 2026";
