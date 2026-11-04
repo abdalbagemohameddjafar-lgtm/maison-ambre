@@ -3,14 +3,27 @@
 import Layout from "../../layouts/Layout.astro";
 import Flacon from "../../components/Flacon.astro";
 import CarteParfum from "../../components/CarteParfum.astro";
-import { parfums, formatPrix, type Parfum } from "../../data/parfums";
+import { parfums, formatPrix, libelleIntensite, type Parfum } from "../../data/parfums";
 
 export function getStaticPaths() {
   return parfums.map((parfum) => ({ params: { slug: parfum.slug }, props: { parfum } }));
 }
 
 const { parfum } = Astro.props as { parfum: Parfum };
-const autres = parfums.filter((p) => p.slug !== parfum.slug).slice(0, 3);
+// « Vous aimerez aussi » : d'abord la même famille, puis les plus appréciés
+const autres = parfums
+  .filter((p) => p.slug !== parfum.slug)
+  .sort(
+    (a, b) =>
+      Number(b.famille === parfum.famille) - Number(a.famille === parfum.famille) ||
+      b.popularite - a.popularite,
+  )
+  .slice(0, 3);
+const caracteristiques = [
+  ["Pour", parfum.genre],
+  ["Intensité", libelleIntensite[parfum.intensite]],
+  ["À porter", parfum.moment === "Jour et soir" ? "Jour et soir" : parfum.moment === "Jour" ? "En journée" : "En soirée"],
+];
 const pyramide = [
   ["Notes de tête", parfum.notes.tete],
   ["Notes de cœur", parfum.notes.coeur],
@@ -50,6 +63,12 @@ const produit = {
         <h1>{parfum.nom}</h1>
         <p class="prix">{formatPrix(parfum.prix)} <span>· {parfum.contenance}</span></p>
         <p class="description">{parfum.description}</p>
+
+        <ul class="caracteristiques">
+          {caracteristiques.map(([titre, valeur]) => (
+            <li><span>{titre}</span>{valeur}</li>
+          ))}
+        </ul>
 
         <dl class="pyramide">
           {pyramide.map(([titre, notes]) => (
@@ -118,12 +137,18 @@ const produit = {
     display: grid; place-items: center; min-height: 480px;
     background: radial-gradient(circle, color-mix(in srgb, var(--teinte) 30%, transparent), var(--sable) 70%);
   }
-  .retour { display: inline-block; font-size: 0.8rem; color: var(--gris); margin-bottom: 2rem; }
+  .retour { display: inline-block; font-size: 0.8rem; color: var(--gris); margin-bottom: 1.5rem; padding: 0.5rem 0; }
   .retour:hover { color: var(--or); }
   h1 { font-size: clamp(2.5rem, 5vw, 3.75rem); }
   .prix { font-size: 1.25rem; font-weight: 500; margin: 0.5rem 0 1.5rem; }
   .prix span { font-weight: 300; color: var(--gris); font-size: 1rem; }
   .description { color: var(--gris); margin-bottom: 2rem; max-width: 48ch; }
+  .caracteristiques { list-style: none; display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 2rem; }
+  .caracteristiques li { background: white; border: 1px solid var(--sable); padding: 0.5rem 0.9rem; font-size: 0.85rem; }
+  .caracteristiques span {
+    display: block; font-size: 0.7rem; letter-spacing: 0.15em; text-transform: uppercase;
+    color: var(--or); font-weight: 500;
+  }
   .pyramide { display: grid; gap: 0; margin-bottom: 2.5rem; }
   .pyramide div { display: grid; grid-template-columns: 9rem 1fr; gap: 1rem; padding: 0.9rem 0; border-top: 1px solid var(--sable); }
   dt { font-size: 0.75rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--or); font-weight: 500; }

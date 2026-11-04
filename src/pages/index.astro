@@ -2,9 +2,18 @@
 import Layout from "../layouts/Layout.astro";
 import Flacon from "../components/Flacon.astro";
 import CarteParfum from "../components/CarteParfum.astro";
-import { parfums } from "../data/parfums";
+import TestParfum from "../components/TestParfum.astro";
+import { parfums, familles } from "../data/parfums";
 
-const familles = ["Tous", ...new Set(parfums.map((p) => p.famille))];
+// Paliers du filtre de prix de la collection (« Moins de … € »)
+const plafonds = [50, 70, 90, 110, 130];
+
+// Ordre de départ : les plus appréciés d'abord (comme le tri par défaut)
+const collection = [...parfums].sort((a, b) => b.popularite - a.popularite);
+const filtresFamille = [
+  { nom: "Tous", nombre: parfums.length },
+  ...familles.map((f) => ({ nom: f, nombre: parfums.filter((p) => p.famille === f).length })),
+];
 
 const horaires = [
   ["Lundi", "Fermé"],
@@ -65,28 +74,77 @@ const magasin = {
     </div>
   </section>
 
+  <!-- ===== Test « Le parfum pour vous » ===== -->
+  <TestParfum />
+
   <!-- ===== Collection ===== -->
   <section id="collection" class="section">
     <div class="conteneur">
-      <div class="entete-section">
+      <!-- data-haut : en arrivant sur la collection, ce titre se cale en haut de l'écran -->
+      <div class="entete-section" data-centre data-haut data-aimant>
         <p class="surtitre">Nos créations</p>
         <h2 class="titre-section">La Collection</h2>
       </div>
 
       <div class="filtres" role="group" aria-label="Filtrer par famille olfactive">
-        {familles.map((f, i) => (
-          <button class:list={["filtre", { actif: i === 0 }]} data-filtre={f}>{f}</button>
+        {filtresFamille.map((f, i) => (
+          <button type="button" class:list={["filtre", { actif: i === 0 }]} data-filtre={f.nom} aria-pressed={i === 0 ? "true" : "false"}>
+            {f.nom} <span class="filtre__nombre">{f.nombre}</span>
+          </button>
         ))}
       </div>
 
+      <div class="barre-outils">
+        <p class="compteur" aria-live="polite"><strong>{parfums.length}</strong> parfums</p>
+        <div class="selecteurs">
+          <label>
+            Pour
+            <select id="choix-genre">
+              <option value="Tous" data-libelle="Tout le monde">Tout le monde</option>
+              <option value="Femme" data-libelle="Femme">Femme</option>
+              <option value="Homme" data-libelle="Homme">Homme</option>
+              <option value="Mixte" data-libelle="Mixte">Mixte</option>
+            </select>
+          </label>
+          <label>
+            Prix
+            <select id="choix-prix">
+              <option value="tous" data-libelle="Tous les prix">Tous les prix</option>
+              {plafonds.map((p) => <option value={p} data-libelle={`Moins de ${p} €`}>Moins de {p} €</option>)}
+            </select>
+          </label>
+          <label>
+            Trier par
+            <select id="choix-tri">
+              <option value="popularite">Meilleures ventes</option>
+              <option value="prix-croissant">Prix : du moins cher au plus cher</option>
+              <option value="prix-decroissant">Prix : du plus cher au moins cher</option>
+              <option value="nouveautes">Nouveautés</option>
+              <option value="nom">Nom : de A à Z</option>
+            </select>
+          </label>
+        </div>
+      </div>
+
       <div class="grille">
-        {parfums.map((p) => <CarteParfum parfum={p} />)}
+        {collection.map((p) => <CarteParfum parfum={p} />)}
+      </div>
+
+      <div class="aucun" hidden>
+        <p>Aucun parfum ne correspond à ces critères.</p>
+        <button type="button" class="bouton bouton--clair" id="reinitialiser">Effacer les filtres</button>
+      </div>
+
+      <div class="plus">
+        <p class="plus__texte"></p>
+        <div class="plus__jauge"><span></span></div>
+        <button type="button" class="bouton bouton--clair" id="voir-plus">Voir plus de parfums</button>
       </div>
     </div>
   </section>
 
   <!-- ===== La Maison ===== -->
-  <section id="maison" class="section maison">
+  <section id="maison" class="section maison" data-aimant>
     <div class="conteneur maison__inner">
       <div>
         <p class="surtitre">Notre histoire</p>
@@ -107,7 +165,7 @@ const magasin = {
   </section>
 
   <!-- ===== Boutique ===== -->
-  <section id="boutique" class="section">
+  <section id="boutique" class="section" data-aimant>
     <div class="conteneur boutique">
       <div>
         <p class="surtitre">Venir nous voir</p>
@@ -131,7 +189,7 @@ const magasin = {
   </section>
 
   <!-- ===== Contact ===== -->
-  <section id="contact" class="section contact">
+  <section id="contact" class="section contact" data-aimant>
     <div class="conteneur contact__inner">
       <p class="surtitre">Une question ?</p>
       <h2 class="titre-section">Écrivez-nous</h2>
@@ -143,7 +201,7 @@ const magasin = {
         <label>Message <textarea name="message" rows="4" required></textarea></label>
         <p class="rgpd">
           Vos données servent uniquement à répondre à votre message.
-          <a href="/mentions-legales">En savoir plus</a>
+          <a href="/politique-de-confidentialite">En savoir plus</a>
         </p>
         <button class="bouton" type="submit">Envoyer</button>
         <p id="confirmation" class="confirmation" hidden>
@@ -155,18 +213,118 @@ const magasin = {
 </Layout>
 
 <script>
-  // Filtre de la collection par famille olfactive
-  const boutons = document.querySelectorAll<HTMLButtonElement>(".filtre");
-  const cartes = document.querySelectorAll<HTMLElement>(".grille > a");
-  boutons.forEach((b) =>
-    b.addEventListener("click", () => {
-      boutons.forEach((x) => x.classList.toggle("actif", x === b));
-      const f = b.dataset.filtre;
-      cartes.forEach((c) => {
-        c.hidden = f !== "Tous" && c.dataset.famille !== f;
-      });
+  // ===== Collection : filtres, tri et « Voir plus » =====
+  const PAR_PAGE = 12;
+  const grille = document.querySelector<HTMLElement>("#collection .grille")!;
+  const cartes = Array.from(grille.querySelectorAll<HTMLElement>(".carte"));
+  const boutonsFamille = document.querySelectorAll<HTMLButtonElement>(".filtre");
+  const choixGenre = document.getElementById("choix-genre") as HTMLSelectElement;
+  const choixPrix = document.getElementById("choix-prix") as HTMLSelectElement;
+  const choixTri = document.getElementById("choix-tri") as HTMLSelectElement;
+  const compteur = document.querySelector<HTMLElement>(".compteur")!;
+  const blocAucun = document.querySelector<HTMLElement>(".aucun")!;
+  const blocPlus = document.querySelector<HTMLElement>(".plus")!;
+  const textePlus = document.querySelector<HTMLElement>(".plus__texte")!;
+  const jauge = document.querySelector<HTMLElement>(".plus__jauge span")!;
+  const boutonPlus = document.getElementById("voir-plus") as HTMLButtonElement;
+
+  const etat = { famille: "Tous", limite: PAR_PAGE };
+  const nombre = (c: HTMLElement, cle: string) => Number(c.dataset[cle]);
+
+  const comparateurs: Record<string, (a: HTMLElement, b: HTMLElement) => number> = {
+    popularite: (a, b) => nombre(b, "popularite") - nombre(a, "popularite"),
+    "prix-croissant": (a, b) => nombre(a, "prix") - nombre(b, "prix"),
+    "prix-decroissant": (a, b) => nombre(b, "prix") - nombre(a, "prix"),
+    nouveautes: (a, b) =>
+      nombre(b, "nouveau") - nombre(a, "nouveau") || nombre(b, "popularite") - nombre(a, "popularite"),
+    nom: (a, b) => a.dataset.nom!.localeCompare(b.dataset.nom!, "fr"),
+  };
+
+  // Les critères choisis en ce moment
+  type Criteres = { famille: string; genre: string; prix: string };
+  const criteres = (): Criteres => ({ famille: etat.famille, genre: choixGenre.value, prix: choixPrix.value });
+
+  const correspond = (c: HTMLElement, k: Criteres = criteres()) =>
+    (k.famille === "Tous" || c.dataset.famille === k.famille) &&
+    (k.genre === "Tous" || c.dataset.genre === k.genre) &&
+    (k.prix === "tous" || nombre(c, "prix") < Number(k.prix));
+
+  // Nombre de parfums qu'on obtiendrait avec ces critères
+  const compter = (k: Criteres) => cartes.filter((c) => correspond(c, k)).length;
+
+  // Met à jour le chiffre affiché à côté de chaque choix, en tenant compte des autres critères.
+  // Un choix qui donnerait 0 parfum est grisé.
+  const majChiffres = () => {
+    const k = criteres();
+    boutonsFamille.forEach((b) => {
+      const n = compter({ ...k, famille: b.dataset.filtre! });
+      b.querySelector(".filtre__nombre")!.textContent = String(n);
+      b.disabled = n === 0 && b.dataset.filtre !== k.famille;
+    });
+    const majListe = (liste: HTMLSelectElement, cle: "genre" | "prix") => {
+      for (const o of liste.options) {
+        const n = compter({ ...k, [cle]: o.value });
+        o.textContent = `${o.dataset.libelle} (${n})`;
+        o.disabled = n === 0 && o.value !== k[cle];
+      }
+    };
+    majListe(choixGenre, "genre");
+    majListe(choixPrix, "prix");
+  };
+
+  const appliquer = () => {
+    majChiffres();
+    const retenues = cartes.filter((c) => correspond(c)).sort(comparateurs[choixTri.value]);
+    // On remet les cartes dans le bon ordre, puis on n'affiche que les premières
+    retenues.forEach((c) => grille.appendChild(c));
+    cartes.forEach((c) => (c.hidden = true));
+    retenues.slice(0, etat.limite).forEach((c) => (c.hidden = false));
+
+    const total = retenues.length;
+    const affiches = Math.min(total, etat.limite);
+    compteur.innerHTML = `<strong>${total}</strong> parfum${total > 1 ? "s" : ""}`;
+    blocAucun.hidden = total > 0;
+    blocPlus.hidden = total === 0;
+    textePlus.textContent = `Vous avez vu ${affiches} parfum${affiches > 1 ? "s" : ""} sur ${total}`;
+    jauge.style.width = `${total ? (affiches / total) * 100 : 0}%`;
+    boutonPlus.hidden = affiches >= total;
+  };
+
+  const choisirFamille = (famille: string) => {
+    etat.famille = famille;
+    etat.limite = PAR_PAGE;
+    boutonsFamille.forEach((b) => {
+      const actif = b.dataset.filtre === famille;
+      b.classList.toggle("actif", actif);
+      b.setAttribute("aria-pressed", String(actif));
+    });
+    appliquer();
+  };
+
+  boutonsFamille.forEach((b) => b.addEventListener("click", () => choisirFamille(b.dataset.filtre!)));
+  [choixGenre, choixPrix, choixTri].forEach((s) =>
+    s.addEventListener("change", () => {
+      etat.limite = PAR_PAGE;
+      appliquer();
     }),
   );
+  boutonPlus.addEventListener("click", () => {
+    etat.limite += PAR_PAGE;
+    appliquer();
+  });
+  document.getElementById("reinitialiser")!.addEventListener("click", () => {
+    choixGenre.value = "Tous";
+    choixPrix.value = "tous";
+    choisirFamille("Tous");
+  });
+  // Demandé par le test « Le parfum pour vous » : afficher toute une famille
+  document.addEventListener("filtrer-famille", (e) => {
+    choixGenre.value = "Tous";
+    choixPrix.value = "tous";
+    choisirFamille((e as CustomEvent<string>).detail);
+  });
+
+  appliquer();
 
   // Formulaire de démonstration (pas encore relié à un vrai envoi d'e-mail)
   const form = document.getElementById("formulaire") as HTMLFormElement;
@@ -204,7 +362,34 @@ const magasin = {
   }
   .filtre:hover { border-color: var(--or); }
   .filtre.actif { background: var(--encre); color: var(--creme); border-color: var(--encre); }
+  .filtre__nombre { font-size: 0.7rem; opacity: 0.6; margin-left: 0.15rem; }
+  .filtre:disabled { opacity: 0.35; cursor: not-allowed; }
+  .filtre:disabled:hover { border-color: var(--sable); }
+  .barre-outils {
+    display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 1rem;
+    padding: 1rem 0; margin-bottom: 1.5rem; border-block: 1px solid var(--sable);
+  }
+  .compteur { font-size: 0.9rem; color: var(--gris); }
+  .compteur strong { color: var(--encre); font-weight: 500; }
+  .selecteurs { display: flex; flex-wrap: wrap; gap: 0.75rem; }
+  .selecteurs label { display: grid; gap: 0.25rem; font-size: 0.7rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--gris); }
+  .selecteurs select {
+    font: inherit; font-size: 0.85rem; letter-spacing: 0; text-transform: none; color: var(--encre);
+    padding: 0.55rem 2rem 0.55rem 0.75rem; border: 1px solid #d8ccba; background-color: white; cursor: pointer;
+    appearance: none; border-radius: 0;
+    background-image: linear-gradient(45deg, transparent 50%, var(--gris) 50%), linear-gradient(135deg, var(--gris) 50%, transparent 50%);
+    background-position: calc(100% - 15px) 52%, calc(100% - 10px) 52%;
+    background-size: 5px 5px; background-repeat: no-repeat;
+  }
+  .selecteurs select:focus-visible { outline: 2px solid var(--or); outline-offset: 1px; }
   .grille { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 1.5rem; }
+  .aucun { text-align: center; padding: 3rem 0; color: var(--gris); }
+  .aucun p { margin-bottom: 1rem; }
+  .plus { display: grid; justify-items: center; gap: 0.75rem; margin-top: 3rem; }
+  .plus__texte { font-size: 0.85rem; color: var(--gris); }
+  .plus__jauge { width: min(240px, 100%); height: 2px; background: var(--sable); }
+  .plus__jauge span { display: block; height: 100%; background: var(--encre); transition: width 0.3s; }
+  #voir-plus { margin-top: 0.5rem; }
 
   /* Maison */
   .maison { background: var(--encre); color: var(--sable); }
@@ -244,5 +429,8 @@ const magasin = {
     .hero__inner { min-height: auto; }
     .hero__visuel { min-height: 300px; }
     .ligne { grid-template-columns: 1fr; }
+    /* 16 px minimum : sinon l'iPhone zoome tout seul quand on touche un champ */
+    input, textarea, .selecteurs select { font-size: 16px; }
+    .filtre { min-height: 40px; padding-inline: 1rem; }
   }
 </style>

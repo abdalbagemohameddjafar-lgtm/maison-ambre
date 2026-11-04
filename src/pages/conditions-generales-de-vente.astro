@@ -1,0 +1,60 @@
+---
+import PageLegale from "../layouts/PageLegale.astro";
+import { societe } from "../data/societe";
+---
+
+<PageLegale titre="Conditions générales de vente" description="Conditions de vente des parfums Maison Ambre en boutique.">
+  <p class="encadre">
+    Les parfums présentés sur ce site sont vendus <strong>uniquement en boutique</strong>, au
+    {societe.adresse}. Le site sert à découvrir la collection : aucun achat ni paiement n'y est possible.
+  </p>
+
+  <h2>1. Objet</h2>
+  <p>
+    Les présentes conditions s'appliquent aux ventes réalisées dans la boutique {societe.nom} auprès de
+    clients particuliers.
+  </p>
+
+  <h2>2. Produits</h2>
+  <p>
+    Les descriptions, compositions et photographies du site sont données à titre indicatif. Chaque
+    parfum peut être senti en boutique avant achat, et des échantillons sont offerts sur demande.
+  </p>
+
+  <h2>3. Prix</h2>
+  <p>
+    Les prix sont indiqués en euros, toutes taxes comprises (TVA incluse). Le prix applicable est celui
+    affiché en boutique le jour de l'achat ; les prix du site peuvent différer en cas d'erreur ou de
+    promotion en magasin.
+  </p>
+
+  <h2>4. Paiement</h2>
+  <p>
+    Le paiement s'effectue en boutique, par carte bancaire ou en espèces, dans les limites prévues par la
+    loi.
+  </p>
+
+  <h2>5. Échanges et retours</h2>
+  <p>
+    Pour un achat effectué en magasin, la loi ne prévoit pas de droit de rétractation. À titre
+    commercial, {societe.nom} accepte d'échanger un parfum dans les 14 jours suivant l'achat, sur
+    présentation du ticket, si le flacon n'a pas été ouvert et que son emballage est intact.
+  </p>
+
+  <h2>6. Garanties légales</h2>
+  <p>
+    Tous nos produits bénéficient de la garantie légale de conformité (articles L217-3 et suivants du
+    Code de la consommation) et de la garantie des vices cachés (articles 1641 et suivants du Code civil).
+    Si un produit est défectueux, rapportez-le en boutique avec votre ticket.
+  </p>
+
+  <h2>7. Réclamations et médiation</h2>
+  <p>
+    Pour toute réclamation, contactez-nous en boutique, au {societe.telephone} ou à {societe.email}. Si
+    aucune solution n'est trouvée, vous pouvez recourir gratuitement au médiateur de la consommation :
+    {societe.mediateur}.
+  </p>
+
+  <h2>8. Droit applicable</h2>
+  <p>Les présentes conditions sont soumises au droit français.</p>
+</PageLegale>

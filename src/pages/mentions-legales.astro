@@ -1,101 +1,53 @@
 ---
-import Layout from "../layouts/Layout.astro";
-
-// ⚠️ Informations à compléter avec les vraies données du magasin avant la mise en ligne.
-const societe = {
-  nom: "Maison Ambre",
-  forme: "SARL [à compléter]",
-  capital: "[à compléter] €",
-  adresse: "12 rue des Parfumeurs, 75003 Paris",
-  rcs: "RCS Paris [à compléter]",
-  siret: "[à compléter]",
-  tva: "FR[à compléter]",
-  telephone: "01 23 45 67 89",
-  email: "contact@[à compléter].fr",
-  directeur: "[Nom du gérant — à compléter]",
-};
-
-const hebergeur = {
-  nom: "[Nom de l'hébergeur — ex. Netlify, Inc.]",
-  adresse: "[Adresse de l'hébergeur — à compléter]",
-  site: "[Site web de l'hébergeur]",
-};
-
-const majLe = "4 novembre 2026";
+import PageLegale from "../layouts/PageLegale.astro";
+import { societe, hebergeur } from "../data/societe";
 ---
 
-<Layout titre="Mentions légales — Maison Ambre" description="Mentions légales et politique de confidentialité du site Maison Ambre.">
-  <section class="section">
-    <div class="conteneur texte-legal">
-      <a href="/" class="retour">← Retour à l'accueil</a>
-      <p class="surtitre">Informations légales</p>
-      <h1 class="titre-section">Mentions légales</h1>
-      <p class="maj">Dernière mise à jour : {majLe}</p>
+<PageLegale titre="Mentions légales" description="Mentions légales du site Maison Ambre : éditeur, hébergeur et propriété intellectuelle.">
+  <h2>1. Éditeur du site</h2>
+  <p>
+    Le site est édité par <strong>{societe.nom}</strong>, {societe.forme} au capital de {societe.capital},
+    dont le siège social est situé {societe.adresse}.
+  </p>
+  <ul>
+    <li>Immatriculation : {societe.rcs}</li>
+    <li>SIRET : {societe.siret}</li>
+    <li>N° de TVA intracommunautaire : {societe.tva}</li>
+    <li>Téléphone : {societe.telephone}</li>
+    <li>E-mail : {societe.email}</li>
+    <li>Directeur de la publication : {societe.directeur}</li>
+  </ul>
 
-      <h2>1. Éditeur du site</h2>
-      <p>
-        Le site est édité par <strong>{societe.nom}</strong>, {societe.forme} au capital de {societe.capital},
-        dont le siège social est situé {societe.adresse}.
-      </p>
-      <ul>
-        <li>Immatriculation : {societe.rcs}</li>
-        <li>SIRET : {societe.siret}</li>
-        <li>N° de TVA intracommunautaire : {societe.tva}</li>
-        <li>Téléphone : {societe.telephone}</li>
-        <li>E-mail : {societe.email}</li>
-        <li>Directeur de la publication : {societe.directeur}</li>
-      </ul>
+  <h2>2. Hébergement</h2>
+  <p>
+    Le site est hébergé par <strong>{hebergeur.nom}</strong>, {hebergeur.adresse} — {hebergeur.site}.
+  </p>
 
-      <h2>2. Hébergement</h2>
-      <p>
-        Le site est hébergé par <strong>{hebergeur.nom}</strong>, {hebergeur.adresse} — {hebergeur.site}.
-      </p>
+  <h2>3. Propriété intellectuelle</h2>
+  <p>
+    L'ensemble des contenus de ce site (textes, visuels, logo, noms des créations) est la propriété
+    exclusive de {societe.nom}, sauf mention contraire. Toute reproduction, représentation ou
+    diffusion, totale ou partielle, sans autorisation écrite préalable est interdite.
+  </p>
 
-      <h2>3. Propriété intellectuelle</h2>
-      <p>
-        L'ensemble des contenus de ce site (textes, visuels, logo, noms des créations) est la propriété
-        exclusive de {societe.nom}, sauf mention contraire. Toute reproduction, représentation ou
-        diffusion, totale ou partielle, sans autorisation écrite préalable est interdite.
-      </p>
+  <h2>4. Données personnelles et cookies</h2>
+  <p>
+    La manière dont nous traitons vos données est expliquée dans notre
+    <a href="/politique-de-confidentialite">politique de confidentialité</a>. Ce site n'utilise aucun
+    cookie : voir la page <a href="/cookies">Cookies</a>.
+  </p>
 
-      <h2>4. Données personnelles</h2>
-      <p>
-        Les informations saisies dans le formulaire de contact (nom, e-mail, message) sont utilisées
-        uniquement pour répondre à votre demande. Elles ne sont ni vendues ni cédées à des tiers, et sont
-        conservées au maximum 3 ans après notre dernier échange.
-      </p>
-      <p>
-        Conformément au Règlement général sur la protection des données (RGPD) et à la loi
-        « Informatique et Libertés », vous disposez d'un droit d'accès, de rectification, d'effacement,
-        d'opposition et de limitation du traitement de vos données. Pour l'exercer, écrivez-nous à
-        {societe.email}. Vous pouvez également introduire une réclamation auprès de la CNIL
-        (<a href="https://www.cnil.fr" target="_blank" rel="noopener">www.cnil.fr</a>).
-      </p>
+  <h2>5. Responsabilité</h2>
+  <p>
+    {societe.nom} s'efforce de fournir des informations exactes et à jour (prix, horaires,
+    disponibilités), mais ne saurait être tenue responsable d'erreurs ou d'omissions. Les prix
+    indiqués sont donnés à titre informatif et peuvent varier en boutique.
+  </p>
 
-      <h2>5. Cookies</h2>
-      <p>
-        Ce site n'utilise aucun cookie, ni publicitaire ni de mesure d'audience. Toutes les ressources
-        (polices d'écriture comprises) sont hébergées sur le site lui-même : aucune donnée de navigation
-        n'est transmise à des services tiers.
-      </p>
-
-      <h2>6. Responsabilité</h2>
-      <p>
-        {societe.nom} s'efforce de fournir des informations exactes et à jour (prix, horaires,
-        disponibilités), mais ne saurait être tenue responsable d'erreurs ou d'omissions. Les prix
-        indiqués sont donnés à titre informatif et peuvent varier en boutique.
-      </p>
-    </div>
-  </section>
-</Layout>
-
-<style>
-  .texte-legal { max-width: 760px; }
-  .retour { display: inline-block; font-size: 0.8rem; color: var(--gris); margin-bottom: 2rem; }
-  .retour:hover { color: var(--or); }
-  .maj { color: var(--gris); font-size: 0.85rem; margin-bottom: 2.5rem; }
-  h2 { font-size: 1.6rem; margin: 2.5rem 0 0.75rem; }
-  p { margin-bottom: 1rem; color: #3d3530; }
-  ul { margin: 0 0 1rem 1.25rem; display: grid; gap: 0.3rem; color: #3d3530; }
-  a:not(.retour) { color: var(--or-fonce); text-decoration: underline; }
-</style>
+  <h2>6. Liens vers d'autres sites</h2>
+  <p>
+    Le site contient des liens vers des réseaux sociaux (Instagram, Facebook, TikTok, YouTube).
+    {societe.nom} n'est pas responsable du contenu de ces sites, qui ont leurs propres règles de
+    confidentialité.
+  </p>
+</PageLegale>

@@ -1,21 +1,33 @@
 ---
 import Flacon from "./Flacon.astro";
-import { formatPrix, type Parfum } from "../data/parfums";
+import { formatPrix, libelleIntensite, type Parfum } from "../data/parfums";
 
 interface Props {
   parfum: Parfum;
 }
 const { parfum } = Astro.props;
+const badge = parfum.nouveau ? "Nouveau" : parfum.popularite >= 93 ? "Best-seller" : null;
 ---
 
-<a href={`/parfums/${parfum.slug}`} class="carte" data-famille={parfum.famille}>
+<a
+  href={`/parfums/${parfum.slug}`}
+  class="carte"
+  data-slug={parfum.slug}
+  data-nom={parfum.nom}
+  data-famille={parfum.famille}
+  data-genre={parfum.genre}
+  data-prix={parfum.prix}
+  data-popularite={parfum.popularite}
+  data-nouveau={parfum.nouveau ? "1" : "0"}
+>
   <div class="visuel">
-    {parfum.nouveau && <span class="badge">Nouveau</span>}
+    {badge && <span class:list={["badge", { "badge--clair": badge === "Best-seller" }]}>{badge}</span>}
     <Flacon couleur={parfum.couleur} />
   </div>
   <div class="infos">
-    <p class="famille">{parfum.famille}</p>
+    <p class="famille">{parfum.famille} · {parfum.genre}</p>
     <h3>{parfum.nom}</h3>
+    <p class="details">{parfum.concentration.type} · {libelleIntensite[parfum.intensite]}</p>
     <p class="prix">{formatPrix(parfum.prix)} <span>· {parfum.contenance}</span></p>
   </div>
 </a>
@@ -29,11 +41,13 @@ const { parfum } = Astro.props;
   }
   .badge {
     position: absolute; top: 1rem; left: 1rem; background: var(--encre); color: var(--creme);
-    font-size: 0.65rem; letter-spacing: 0.15em; text-transform: uppercase; padding: 0.3rem 0.6rem;
+    font-size: 0.7rem; letter-spacing: 0.15em; text-transform: uppercase; padding: 0.3rem 0.6rem;
   }
+  .badge--clair { background: var(--creme); color: var(--or-fonce); border: 1px solid var(--or); }
   .infos { padding: 1.25rem 1.25rem 1.5rem; text-align: center; }
   .famille { font-size: 0.7rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--or); }
   h3 { font-size: 1.6rem; margin: 0.25rem 0; }
+  .details { font-size: 0.78rem; color: var(--gris); margin-bottom: 0.4rem; }
   .prix { font-weight: 500; }
   .prix span { font-weight: 300; color: var(--gris); font-size: 0.85rem; }
 </style>

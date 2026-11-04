@@ -1,0 +1,378 @@
+---
+// Test « Le parfum pour vous » : quelques questions, puis une sélection personnalisée.
+// Les cartes du résultat sont copiées depuis la grille de la collection (même page).
+---
+
+<section id="test" class="section test" aria-labelledby="test-titre">
+  <div class="test__cadre">
+    <div class="carre" data-etat="accueil" data-centre data-aimant>
+      <!-- Écran d'accueil -->
+      <div class="ecran ecran--accueil">
+        <p class="surtitre">Test olfactif · 1 minute</p>
+        <h2 id="test-titre" class="titre-carre">Le parfum <em>pour vous</em></h2>
+        <p class="intro">
+          Répondez à 5 petites questions sur vos goûts : nous vous proposons ensuite les parfums
+          de la Maison qui vous ressemblent le plus.
+        </p>
+        <button type="button" class="bouton bouton--or" data-action="commencer">Commencer le test</button>
+      </div>
+
+      <!-- Écran des questions -->
+      <div class="ecran ecran--question" hidden>
+        <div class="progression">
+          <p class="progression__texte" aria-live="polite"></p>
+          <div class="progression__barre"><span></span></div>
+        </div>
+        <h3 class="question" tabindex="-1"></h3>
+        <div class="options" role="group"></div>
+        <button type="button" class="lien-retour" data-action="retour">← Question précédente</button>
+      </div>
+
+      <!-- Écran du résultat -->
+      <div class="ecran ecran--resultat" hidden>
+        <p class="surtitre">Votre sélection</p>
+        <h3 class="titre-resultat" tabindex="-1">Nos parfums pour vous</h3>
+        <p class="profil"></p>
+        <div class="resultats"></div>
+        <div class="actions">
+          <a href="#collection" class="bouton bouton--or" data-action="voir-famille"></a>
+          <button type="button" class="bouton bouton--contour" data-action="recommencer">Refaire le test</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+  import { parfums } from "../data/parfums";
+  import { budgets, dansBudget } from "../data/budgets";
+
+  type Option = { valeur: string; titre: string; detail?: string };
+  type Question = { cle: string; titre: string; options: Option[] };
+
+  const questions: Question[] = [
+    {
+      cle: "famille",
+      titre: "Quelle ambiance vous attire le plus ?",
+      options: [
+        { valeur: "Floral", titre: "Floral", detail: "Rose, jasmin, pivoine" },
+        { valeur: "Fruité", titre: "Fruité", detail: "Pêche, cassis, framboise" },
+        { valeur: "Frais", titre: "Frais", detail: "Agrumes, marin, herbes" },
+        { valeur: "Boisé", titre: "Boisé", detail: "Cèdre, santal, vétiver" },
+        { valeur: "Oriental", titre: "Oriental & épicé", detail: "Ambre, safran, encens" },
+        { valeur: "Gourmand", titre: "Gourmand", detail: "Vanille, caramel, café" },
+        { valeur: "Musqué", titre: "Doux & poudré", detail: "Musc, iris, linge propre" },
+      ],
+    },
+    {
+      cle: "genre",
+      titre: "Pour qui est ce parfum ?",
+      options: [
+        { valeur: "Femme", titre: "Pour elle" },
+        { valeur: "Homme", titre: "Pour lui" },
+        { valeur: "Tous", titre: "Peu importe", detail: "J'aime aussi les parfums mixtes" },
+      ],
+    },
+    {
+      cle: "moment",
+      titre: "Quand le porterez-vous surtout ?",
+      options: [
+        { valeur: "Jour", titre: "En journée", detail: "Au travail, en balade" },
+        { valeur: "Soir", titre: "En soirée", detail: "Sorties, dîners" },
+        { valeur: "Tous", titre: "Un peu tout le temps", detail: "Mon parfum du quotidien" },
+      ],
+    },
+    {
+      cle: "intensite",
+      titre: "Quelle présence voulez-vous ?",
+      options: [
+        { valeur: "1", titre: "Discret", detail: "Il reste près de la peau" },
+        { valeur: "2", titre: "Équilibré", detail: "On le remarque quand on s'approche" },
+        { valeur: "3", titre: "Affirmé", detail: "Il laisse un vrai sillage" },
+      ],
+    },
+    {
+      cle: "budget",
+      titre: "Quel est votre budget ?",
+      options: [
+        ...budgets.map((b) => ({ valeur: b.id, titre: b.libelle })),
+        { valeur: "tous", titre: "Peu importe" },
+      ],
+    },
+  ];
+
+  // Familles proches : un amateur de floral appréciera souvent un musqué, etc.
+  const affinites: Record<string, Record<string, number>> = {
+    Floral: { Floral: 3, Musqué: 1.5, Fruité: 0.5 },
+    Fruité: { Fruité: 3, Gourmand: 1, Floral: 0.5 },
+    Frais: { Frais: 3, Aromatique: 2 },
+    Boisé: { Boisé: 3, Aromatique: 1, Oriental: 1 },
+    Oriental: { Oriental: 3, Gourmand: 1, Boisé: 1 },
+    Gourmand: { Gourmand: 3, Oriental: 1.5, Musqué: 0.5 },
+    Musqué: { Musqué: 3, Floral: 1, Gourmand: 0.5 },
+  };
+
+  type Parfum = (typeof parfums)[number];
+  const noter = (p: Parfum, r: Record<string, string>) => {
+    let score = affinites[r.famille]?.[p.famille] ?? 0;
+
+    if (r.genre !== "Tous") score += p.genre === r.genre ? 2 : p.genre === "Mixte" ? 1 : -4;
+
+    if (r.moment === "Tous") score += p.moment === "Jour et soir" ? 1.5 : 0.5;
+    else score += p.moment === r.moment ? 1.5 : p.moment === "Jour et soir" ? 1 : -0.5;
+
+    score += 1.5 - 1.25 * Math.abs(p.intensite - Number(r.intensite));
+
+    if (r.budget !== "tous") score += dansBudget(p.prix, r.budget) ? 1.5 : -2.5;
+
+    return score + p.popularite / 100; // à égalité, le plus apprécié passe devant
+  };
+
+  // ----- Éléments de la page -----
+  const carre = document.querySelector<HTMLElement>("#test .carre")!;
+  const ecrans = {
+    accueil: carre.querySelector<HTMLElement>(".ecran--accueil")!,
+    question: carre.querySelector<HTMLElement>(".ecran--question")!,
+    resultat: carre.querySelector<HTMLElement>(".ecran--resultat")!,
+  };
+  const texteProgression = carre.querySelector<HTMLElement>(".progression__texte")!;
+  const barre = carre.querySelector<HTMLElement>(".progression__barre span")!;
+  const titreQuestion = carre.querySelector<HTMLElement>(".question")!;
+  const zoneOptions = carre.querySelector<HTMLElement>(".options")!;
+  const boutonRetour = carre.querySelector<HTMLButtonElement>("[data-action='retour']")!;
+  const lienFamille = carre.querySelector<HTMLAnchorElement>("[data-action='voir-famille']")!;
+
+  let etape = 0;
+  let reponses: Record<string, string> = {};
+
+  const afficher = (nom: keyof typeof ecrans) => {
+    (Object.keys(ecrans) as (keyof typeof ecrans)[]).forEach((k) => (ecrans[k].hidden = k !== nom));
+    carre.dataset.etat = nom;
+  };
+
+  const poserQuestion = () => {
+    const q = questions[etape];
+    texteProgression.textContent = `Question ${etape + 1} sur ${questions.length}`;
+    barre.style.width = `${((etape + 1) / questions.length) * 100}%`;
+    titreQuestion.textContent = q.titre;
+    zoneOptions.setAttribute("aria-label", q.titre);
+    zoneOptions.classList.toggle("options--nombreuses", q.options.length > 4);
+    zoneOptions.replaceChildren(
+      ...q.options.map((o) => {
+        const b = document.createElement("button");
+        b.type = "button";
+        b.className = "option";
+        if (reponses[q.cle] === o.valeur) b.classList.add("choisie");
+        const titre = document.createElement("strong");
+        titre.textContent = o.titre;
+        b.append(titre);
+        if (o.detail) {
+          const d = document.createElement("span");
+          d.textContent = o.detail;
+          b.append(d);
+        }
+        b.addEventListener("click", () => repondre(q.cle, o.valeur));
+        return b;
+      }),
+    );
+    boutonRetour.style.visibility = etape === 0 ? "hidden" : "visible";
+    afficher("question");
+    titreQuestion.focus({ preventScroll: true });
+  };
+
+  const repondre = (cle: string, valeur: string) => {
+    reponses[cle] = valeur;
+    etape++;
+    if (etape < questions.length) poserQuestion();
+    else montrerResultat();
+  };
+
+  const libelleChoisi = (cle: string) => {
+    const q = questions.find((x) => x.cle === cle)!;
+    return q.options.find((o) => o.valeur === reponses[cle])?.titre ?? "";
+  };
+
+  const montrerResultat = () => {
+    const selection = [...parfums]
+      .map((p) => ({ p, score: noter(p, reponses) }))
+      .sort((a, b) => b.score - a.score)
+      .slice(0, 3)
+      .map((x) => x.p);
+
+    carre.querySelector(".profil")!.textContent = ["famille", "genre", "moment", "intensite", "budget"]
+      .map(libelleChoisi)
+      .filter((t) => t && t !== "Peu importe")
+      .join(" · ");
+
+    // Copie des cartes déjà présentes dans la collection
+    const cartes = selection
+      .map((p) => document.querySelector<HTMLElement>(`#collection .carte[data-slug="${p.slug}"]`))
+      .filter((c): c is HTMLElement => c !== null)
+      .map((c) => {
+        const copie = c.cloneNode(true) as HTMLElement;
+        copie.hidden = false;
+        return copie;
+      });
+    carre.querySelector(".resultats")!.replaceChildren(...cartes);
+
+    const famille = reponses.famille;
+    lienFamille.textContent = `Voir tous les parfums « ${libelleChoisi("famille")} »`;
+    lienFamille.dataset.famille = famille;
+
+    afficher("resultat");
+    carre.querySelector<HTMLElement>(".titre-resultat")!.focus({ preventScroll: true });
+  };
+
+  carre.querySelector("[data-action='commencer']")!.addEventListener("click", () => {
+    etape = 0;
+    reponses = {};
+    poserQuestion();
+  });
+  boutonRetour.addEventListener("click", () => {
+    if (etape > 0) {
+      etape--;
+      poserQuestion();
+    }
+  });
+  carre.querySelector("[data-action='recommencer']")!.addEventListener("click", () => {
+    etape = 0;
+    reponses = {};
+    poserQuestion();
+  });
+  // Ouvre la collection filtrée sur la famille choisie
+  lienFamille.addEventListener("click", () => {
+    document.dispatchEvent(new CustomEvent("filtrer-famille", { detail: lienFamille.dataset.famille }));
+  });
+
+  // Le carré apparaît en douceur quand on arrive dessus en faisant défiler la page
+  if ("IntersectionObserver" in window && !matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    carre.classList.add("a-reveler");
+    const observateur = new IntersectionObserver(
+      (entrees) => {
+        if (entrees.some((e) => e.isIntersecting)) {
+          carre.classList.add("revele");
+          observateur.disconnect();
+        }
+      },
+      { threshold: 0.2 },
+    );
+    observateur.observe(carre);
+  }
+</script>
+
+<style>
+  .test { background: linear-gradient(180deg, var(--sable), var(--creme)); }
+
+  /* Le grand carré */
+  .carre {
+    /* Téléphone et tablette : un carré */
+    width: min(100% - 2rem, 600px, 74vh);
+    aspect-ratio: 1 / 1; /* s'agrandit tout seul si le contenu ne rentre pas */
+    margin-inline: auto;
+    display: grid; place-items: center;
+    padding: clamp(1.25rem, 5vw, 3rem);
+    background:
+      radial-gradient(circle at 85% 10%, rgba(200, 135, 58, 0.28), transparent 45%),
+      radial-gradient(circle at 10% 95%, rgba(200, 135, 58, 0.18), transparent 40%),
+      var(--encre);
+    color: var(--creme);
+    box-shadow: 0 40px 80px -40px rgba(31, 26, 23, 0.6);
+    outline: 1px solid rgba(176, 130, 63, 0.45); outline-offset: -14px;
+  }
+  .carre[data-etat="resultat"] { width: min(100% - 2rem, 1000px); aspect-ratio: auto; }
+
+  /* Ordinateur : un grand bandeau rectangulaire, d'un bord à l'autre de l'écran */
+  @media (min-width: 801px) {
+    .carre,
+    .carre[data-etat="resultat"] {
+      width: 100%;
+      aspect-ratio: auto;
+      /* La hauteur de l'écran d'accueil, gardée à toutes les étapes : le bandeau ne grandit pas.
+         C'est le contenu de chaque étape qui est disposé pour tenir dedans. */
+      min-height: clamp(520px, 68vh, 620px);
+      padding: 2rem;
+      box-shadow: none;
+      outline-offset: -18px;
+    }
+    .ecran { max-width: 880px; }
+    .ecran--resultat { max-width: 1000px; }
+
+    /* Résultat : cartes compactes pour tenir dans la même hauteur */
+    .ecran--resultat .surtitre { margin-bottom: 0.25rem; }
+    .titre-resultat { font-size: 2.1rem; }
+    .profil { margin: 0.2rem 0 1rem; font-size: 0.9rem; }
+    .resultats { margin-bottom: 1rem; gap: 1rem; }
+    .resultats :global(.visuel) { padding: 0.8rem 1rem; }
+    .resultats :global(.flacon) { --echelle: 0.55; }
+    .resultats :global(.infos) { padding: 0.6rem 1rem 0.8rem; }
+    .resultats :global(h3) { font-size: 1.3rem; margin: 0.1rem 0; }
+    .resultats :global(.details) { margin-bottom: 0.2rem; }
+  }
+  .carre.a-reveler { opacity: 0; transform: translateY(48px) scale(0.97); transition: opacity 0.8s ease, transform 0.8s ease; }
+  .carre.a-reveler.revele { opacity: 1; transform: none; }
+
+  .ecran { width: 100%; text-align: center; animation: fondu 0.4s ease; }
+  @keyframes fondu { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+  @media (prefers-reduced-motion: reduce) { .ecran { animation: none; } }
+
+  .titre-carre { font-size: clamp(2.2rem, 6vw, 3.5rem); margin-bottom: 1rem; }
+  .titre-carre em { color: var(--or); }
+  .intro { color: #cfc5b8; max-width: 38ch; margin: 0 auto 1.75rem; }
+
+  .bouton--or { background: var(--or); border-color: var(--or); color: var(--encre); font-weight: 500; }
+  .bouton--or:hover { background: transparent; color: var(--or); }
+  .bouton--contour { background: transparent; border-color: rgba(250, 246, 240, 0.5); color: var(--creme); }
+  .bouton--contour:hover { background: var(--creme); color: var(--encre); }
+
+  /* Questions */
+  .progression { max-width: 360px; margin: 0 auto 1.25rem; }
+  .progression__texte { font-size: 0.75rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--or); margin-bottom: 0.6rem; }
+  .progression__barre { height: 3px; background: rgba(250, 246, 240, 0.15); }
+  .progression__barre span { display: block; height: 100%; width: 0; background: var(--or); transition: width 0.4s ease; }
+  .question { font-size: clamp(1.5rem, 3.5vw, 2rem); margin-bottom: 1.25rem; outline: none; }
+  .options { display: grid; gap: 0.6rem; max-width: 440px; margin: 0 auto; }
+  .options--nombreuses { grid-template-columns: repeat(2, 1fr); max-width: 480px; }
+  /* Les boutons de réponse sont créés par le script : il faut :global() pour qu'ils reçoivent ces styles */
+  .options :global(.option) {
+    display: grid; gap: 0.1rem; padding: 0.7rem 0.95rem; text-align: left; cursor: pointer;
+    font-family: var(--sans); color: var(--creme);
+    background: rgba(250, 246, 240, 0.06); border: 1px solid rgba(250, 246, 240, 0.2);
+    transition: border-color 0.2s, background 0.2s, transform 0.2s;
+  }
+  .options :global(.option:hover) { border-color: var(--or); background: rgba(176, 130, 63, 0.15); transform: translateY(-2px); }
+  .options :global(.option.choisie) { border-color: var(--or); background: rgba(176, 130, 63, 0.22); }
+  .options :global(.option strong) { font-family: var(--serif); font-size: 1.2rem; font-weight: 400; line-height: 1.2; }
+  .options :global(.option span) { font-size: 0.76rem; color: #b9ad9f; line-height: 1.35; }
+  .options--nombreuses :global(.option:last-child:nth-child(odd)) { grid-column: 1 / -1; }
+  .lien-retour {
+    margin-top: 1rem; padding: 0.4rem; background: none; border: none; cursor: pointer;
+    font-family: var(--sans); font-size: 0.8rem; color: #b9ad9f;
+  }
+  .lien-retour:hover { color: var(--or); }
+
+  /* Résultat */
+  .titre-resultat { font-size: clamp(2rem, 5vw, 3rem); outline: none; }
+  .profil { color: #cfc5b8; margin: 0.5rem 0 2rem; }
+  .resultats {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.25rem;
+    color: var(--encre); text-align: left; margin-bottom: 2rem;
+  }
+  .actions { display: flex; flex-wrap: wrap; gap: 0.75rem; justify-content: center; }
+
+  /* Téléphone : on garde un carré en compactant le contenu */
+  @media (max-width: 640px) {
+    .carre { outline-offset: -8px; }
+    .surtitre { margin-bottom: 0.5rem; }
+    .intro { font-size: 0.9rem; margin-bottom: 1.25rem; }
+    .progression { margin-bottom: 0.75rem; }
+    .progression__texte { margin-bottom: 0.4rem; }
+    .question { font-size: 1.35rem; margin-bottom: 0.85rem; }
+    .options { gap: 0.45rem; }
+    .options :global(.option) { padding: 0.55rem 0.75rem; }
+    .options :global(.option strong) { font-size: 1.05rem; }
+    .options :global(.option span) { font-size: 0.7rem; }
+    /* Avec 7 réponses, on n'affiche que leur nom pour que tout tienne */
+    .options--nombreuses :global(.option span) { display: none; }
+    .lien-retour { margin-top: 0.5rem; }
+  }
+</style>

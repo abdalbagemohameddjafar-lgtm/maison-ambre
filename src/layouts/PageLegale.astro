@@ -1,0 +1,41 @@
+---
+// Mise en page commune aux pages légales (mentions, confidentialité, CGV, cookies)
+import Layout from "./Layout.astro";
+import { majLe } from "../data/societe";
+
+interface Props {
+  titre: string;
+  description: string;
+}
+const { titre, description } = Astro.props;
+---
+
+<Layout titre={`${titre} — Maison Ambre`} description={description}>
+  <section class="section">
+    <div class="conteneur texte-legal">
+      <a href="/" class="retour">← Retour à l'accueil</a>
+      <p class="surtitre">Informations légales</p>
+      <h1 class="titre-section">{titre}</h1>
+      <p class="maj">Dernière mise à jour : {majLe}</p>
+      <slot />
+    </div>
+  </section>
+</Layout>
+
+<style>
+  .texte-legal { max-width: 760px; }
+  .retour { display: inline-block; font-size: 0.8rem; color: var(--gris); margin-bottom: 1.5rem; padding: 0.5rem 0; }
+  .retour:hover { color: var(--or); }
+  .maj { color: var(--gris); font-size: 0.85rem; margin-bottom: 2.5rem; }
+  .texte-legal :global(h2) { font-size: 1.6rem; margin: 2.5rem 0 0.75rem; }
+  .texte-legal :global(p) { margin-bottom: 1rem; color: #3d3530; }
+  .texte-legal :global(ul) { margin: 0 0 1rem 1.25rem; display: grid; gap: 0.3rem; color: #3d3530; }
+  .texte-legal :global(a:not(.retour)) { color: var(--or-fonce); text-decoration: underline; }
+  /* Sur téléphone, le tableau défile sur le côté au lieu de déborder de la page */
+  .texte-legal :global(.tableau) { overflow-x: auto; margin-bottom: 1rem; }
+  .texte-legal :global(.tableau table) { min-width: 560px; }
+  .texte-legal :global(table) { width: 100%; border-collapse: collapse; margin-bottom: 1rem; font-size: 0.9rem; background: white; }
+  .texte-legal :global(th), .texte-legal :global(td) { text-align: left; padding: 0.7rem 0.9rem; border-bottom: 1px solid var(--sable); vertical-align: top; }
+  .texte-legal :global(th) { font-weight: 500; }
+  .texte-legal :global(.encadre) { background: var(--sable); padding: 1rem 1.25rem; margin-bottom: 1.5rem; }
+</style>

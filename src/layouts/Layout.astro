@@ -18,6 +18,38 @@ const {
   description = "Maison Ambre, parfumerie de créateur : parfums artisanaux composés à Grasse.",
   jsonLd,
 } = Astro.props;
+
+// Réseaux sociaux : site de démonstration, les liens mènent aux pages d'accueil des réseaux.
+// Pour un vrai magasin, remplacez par l'adresse de son compte (ex. https://www.instagram.com/nom_du_compte/).
+const reseaux = [
+  {
+    nom: "Instagram",
+    lien: "https://www.instagram.com/",
+    icone: '<rect x="3" y="3" width="18" height="18" rx="5" fill="none" stroke="currentColor" stroke-width="1.8"/><circle cx="12" cy="12" r="4.2" fill="none" stroke="currentColor" stroke-width="1.8"/><circle cx="17.4" cy="6.6" r="1.2" fill="currentColor"/>',
+  },
+  {
+    nom: "Facebook",
+    lien: "https://www.facebook.com/",
+    icone: '<path fill="currentColor" d="M13.5 21v-7.5h2.6l.4-3.1h-3V8.5c0-.9.3-1.5 1.6-1.5h1.6V4.2c-.3 0-1.2-.1-2.3-.1-2.3 0-3.9 1.4-3.9 4v2.3H7.9v3.1h2.6V21h3z"/>',
+  },
+  {
+    nom: "TikTok",
+    lien: "https://www.tiktok.com/",
+    icone: '<path fill="currentColor" d="M16.2 3c.3 2.3 1.7 3.9 3.8 4.2v3.1c-1.4 0-2.7-.4-3.8-1.1v6.1a5.6 5.6 0 1 1-5.6-5.6l.8.1v3.2a2.5 2.5 0 1 0 1.7 2.3V3h3.1z"/>',
+  },
+  {
+    nom: "YouTube",
+    lien: "https://www.youtube.com/",
+    icone: '<rect x="2.5" y="5.5" width="19" height="13" rx="3.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path fill="currentColor" d="M10 9v6l5.2-3z"/>',
+  },
+];
+
+const liensLegaux = [
+  { nom: "Mentions légales", lien: "/mentions-legales" },
+  { nom: "Politique de confidentialité", lien: "/politique-de-confidentialite" },
+  { nom: "Conditions générales de vente", lien: "/conditions-generales-de-vente" },
+  { nom: "Cookies", lien: "/cookies" },
+];
 ---
 
 <!doctype html>
@@ -46,6 +78,7 @@ const {
           <span></span><span></span><span></span>
         </button>
         <nav id="navigation">
+          <a href="/#test">Le test</a>
           <a href="/#collection">Collection</a>
           <a href="/#maison">La Maison</a>
           <a href="/#boutique">Boutique</a>
@@ -59,13 +92,44 @@ const {
     </main>
 
     <footer class="pied">
-      <div class="conteneur pied__inner">
-        <p class="logo">Maison <span>Ambre</span></p>
-        <p>12 rue des Parfumeurs, 75003 Paris · 01 23 45 67 89</p>
-        <p class="pied__petit">
-          © {new Date().getFullYear()} Maison Ambre — Site de démonstration ·
-          <a href="/mentions-legales">Mentions légales</a>
-        </p>
+      <div class="conteneur pied__haut">
+        <div class="pied__marque">
+          <p class="logo">Maison <span>Ambre</span></p>
+          <p class="pied__slogan">Parfums de créateur composés à Grasse, depuis 1987.</p>
+          <ul class="reseaux" aria-label="Maison Ambre sur les réseaux sociaux">
+            {reseaux.map((r) => (
+              <li>
+                <a href={r.lien} target="_blank" rel="noopener" aria-label={`${r.nom} (nouvel onglet)`} title={r.nom}>
+                  <svg viewBox="0 0 24 24" aria-hidden="true" set:html={r.icone} />
+                </a>
+              </li>
+            ))}
+          </ul>
+        </div>
+        <nav class="pied__colonne" aria-label="Découvrir">
+          <h2>Découvrir</h2>
+          <a href="/#collection">La collection</a>
+          <a href="/#test">Le parfum pour vous</a>
+          <a href="/#maison">Notre histoire</a>
+        </nav>
+        <nav class="pied__colonne" aria-label="Nous trouver">
+          <h2>Nous trouver</h2>
+          <a href="/#boutique">Adresse et horaires</a>
+          <a href="/#contact">Nous écrire</a>
+          <a href="tel:+33123456789">01 23 45 67 89</a>
+        </nav>
+        <div class="pied__colonne">
+          <h2>La boutique</h2>
+          <p>12 rue des Parfumeurs<br />75003 Paris</p>
+          <p>Du mardi au dimanche</p>
+        </div>
+      </div>
+
+      <div class="conteneur pied__bas">
+        <p>© {new Date().getFullYear()} Maison Ambre — Site de démonstration</p>
+        <nav class="pied__legal" aria-label="Informations légales">
+          {liensLegaux.map((l) => <a href={l.lien}>{l.nom}</a>)}
+        </nav>
       </div>
     </footer>
   </body>
@@ -85,7 +149,12 @@ const {
   * { box-sizing: border-box; margin: 0; padding: 0; }
   /* L'attribut hidden doit toujours masquer l'élément, même si un style lui donne display: block */
   [hidden] { display: none !important; }
-  html { scroll-behavior: smooth; }
+  html {
+    scroll-behavior: smooth;
+    /* Les ancres s'arrêtent sous le menu fixe, pas derrière */
+    scroll-padding-top: var(--hauteur-entete, 74px);
+  }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
   body {
     font-family: var(--sans);
     font-weight: 300;
@@ -132,13 +201,47 @@ const {
   }
   .logo { font-family: var(--serif); font-size: 1.6rem; letter-spacing: 0.05em; }
   .logo span { color: var(--or); font-style: italic; }
-  nav { display: flex; align-items: center; gap: 1.5rem; font-size: 0.85rem; flex-wrap: wrap; }
-  nav a:not(.bouton):hover { color: var(--or); }
-  .pied { background: var(--encre); color: var(--sable); padding: 3rem 0; text-align: center; }
-  .pied__inner { display: grid; gap: 0.5rem; }
-  .pied__petit { font-size: 0.75rem; color: var(--gris); margin-top: 1rem; }
-  .pied__petit a { text-decoration: underline; text-underline-offset: 3px; }
-  .pied__petit a:hover { color: var(--or); }
+  #navigation { display: flex; align-items: center; gap: 1.5rem; font-size: 0.85rem; flex-wrap: wrap; }
+  #navigation a:not(.bouton):hover { color: var(--or); }
+  /* Pied de page */
+  .pied { background: var(--encre); color: var(--sable); padding-top: 4rem; }
+  .pied__haut {
+    display: grid; grid-template-columns: 1.6fr 1fr 1fr 1fr; gap: 2.5rem;
+    padding-bottom: 3rem;
+  }
+  .pied__slogan { color: #a89d90; font-size: 0.9rem; margin: 0.5rem 0 1.5rem; max-width: 30ch; }
+  .pied__colonne { display: flex; flex-direction: column; gap: 0.55rem; font-size: 0.9rem; }
+  .pied__colonne h2 {
+    font-family: var(--sans); font-size: 0.7rem; font-weight: 500; letter-spacing: 0.2em;
+    text-transform: uppercase; color: var(--or); margin-bottom: 0.4rem;
+  }
+  .pied__colonne a, .pied__colonne p { color: #cfc5b8; }
+  .pied__colonne a:hover { color: var(--or); }
+  .reseaux { list-style: none; display: flex; gap: 0.6rem; }
+  .reseaux a {
+    display: grid; place-items: center; width: 40px; height: 40px; border-radius: 50%;
+    border: 1px solid #4a413a; color: var(--sable); transition: color 0.2s, border-color 0.2s, background 0.2s;
+  }
+  .reseaux a:hover { color: var(--encre); background: var(--or); border-color: var(--or); }
+  .reseaux svg { width: 18px; height: 18px; }
+  .pied__bas {
+    display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 0.75rem 1.5rem;
+    border-top: 1px solid #3a322c; padding: 1.25rem 0 1.5rem; font-size: 0.72rem; color: #8f8478;
+  }
+  .pied__legal { display: flex; flex-wrap: wrap; gap: 0.4rem 1.25rem; }
+  .pied__legal a:hover { color: var(--or); text-decoration: underline; text-underline-offset: 3px; }
+  @media (max-width: 860px) {
+    .pied__haut { grid-template-columns: 1fr 1fr; }
+    .pied__marque { grid-column: 1 / -1; }
+  }
+  @media (max-width: 480px) {
+    .pied__haut { grid-template-columns: 1fr; gap: 2rem; }
+    .pied__bas { flex-direction: column; align-items: flex-start; }
+    /* Liens plus faciles à toucher du doigt */
+    .pied__legal { flex-direction: column; gap: 0; }
+    .pied__legal a { padding: 0.55rem 0; font-size: 0.8rem; }
+    .pied__colonne a { padding: 0.3rem 0; }
+  }
   /* Bouton « burger » : visible uniquement sur téléphone */
   .menu-btn {
     display: none; flex-direction: column; justify-content: center; gap: 5px;
@@ -151,13 +254,13 @@ const {
 
   @media (max-width: 720px) {
     .menu-btn { display: flex; }
-    nav {
+    #navigation {
       display: none; width: 100%; flex-direction: column; align-items: stretch;
       gap: 0; padding: 0.5rem 0 1rem; font-size: 1rem;
     }
-    nav.ouvert { display: flex; }
-    nav a:not(.bouton) { padding: 0.85rem 0; border-bottom: 1px solid var(--sable); }
-    nav .bouton { margin-top: 1rem; text-align: center; padding: 0.85rem; }
+    #navigation.ouvert { display: flex; }
+    #navigation a:not(.bouton) { padding: 0.85rem 0; border-bottom: 1px solid var(--sable); }
+    #navigation .bouton { margin-top: 1rem; text-align: center; padding: 0.85rem; }
   }
 </style>
 
@@ -173,4 +276,103 @@ const {
   bouton.addEventListener("click", () => basculer(!nav.classList.contains("ouvert")));
   // Referme le menu quand on choisit une rubrique
   nav.querySelectorAll("a").forEach((a) => a.addEventListener("click", () => basculer(false)));
+
+  // ===== Centrage des rubriques =====
+  // Quand on clique sur un lien vers une rubrique de la page (ex. « Le test »), elle s'affiche
+  // centrée dans la partie visible de l'écran (sous le menu). Si elle est plus haute que l'écran,
+  // elle s'affiche à partir de son début.
+  const entete = document.querySelector<HTMLElement>(".entete")!;
+  const hauteurEntete = () => entete.getBoundingClientRect().height;
+  const majHauteurEntete = () =>
+    document.documentElement.style.setProperty("--hauteur-entete", `${hauteurEntete()}px`);
+  majHauteurEntete();
+  addEventListener("resize", majHauteurEntete);
+
+  // Position idéale de la page pour un élément :
+  // - data-haut : l'élément se cale en haut, juste sous le menu (ex. le titre « La Collection ») ;
+  // - sinon il est centré dans la partie visible, ou affiché depuis son début s'il est trop grand.
+  const ESPACE_SOUS_MENU = 24;
+  // Position réelle dans la page, sans tenir compte des animations (décalages temporaires)
+  const hautDansLaPage = (el: HTMLElement) => {
+    let y = 0;
+    for (let e: HTMLElement | null = el; e; e = e.offsetParent as HTMLElement | null) y += e.offsetTop;
+    return y;
+  };
+  const positionIdeale = (el: HTMLElement) => {
+    const haut = hauteurEntete();
+    const visible = innerHeight - haut;
+    const debut = hautDansLaPage(el);
+    if (el.hasAttribute("data-haut")) return debut - haut - ESPACE_SOUS_MENU;
+    const hauteur = el.offsetHeight;
+    const marge = hauteur < visible ? (visible - hauteur) / 2 : 0;
+    return debut - haut - marge;
+  };
+
+  const centrer = (section: HTMLElement, douceur: ScrollBehavior = "smooth") => {
+    // Une rubrique peut désigner l'élément précis à placer (ex. le bandeau du test)
+    const cible = section.querySelector<HTMLElement>("[data-centre]") ?? section;
+    scrollTo({ top: positionIdeale(cible), behavior: douceur });
+  };
+
+  const surAccueil = location.pathname === "/";
+  document.addEventListener("click", (e) => {
+    const lien = (e.target as Element).closest<HTMLAnchorElement>("a[href*='#']");
+    if (!lien || !surAccueil) return;
+    const url = new URL(lien.href);
+    if (url.pathname !== "/" || !url.hash || url.hash === "#contenu") return;
+    const section = document.getElementById(decodeURIComponent(url.hash.slice(1)));
+    if (!section) return;
+    e.preventDefault();
+    history.pushState(null, "", url.hash);
+    centrer(section);
+  });
+
+  // Arrivée depuis une autre page avec une adresse comme /#test
+  if (surAccueil && location.hash.length > 1) {
+    const section = document.getElementById(decodeURIComponent(location.hash.slice(1)));
+    if (section) addEventListener("load", () => centrer(section, "auto"));
+  }
+
+  // ===== « Aimant » au défilement =====
+  // Quand on a fini de faire défiler la page et qu'une rubrique marquée data-aimant est presque
+  // centrée, on termine le centrage en douceur. Les rubriques plus hautes que l'écran (la
+  // collection) ne sont jamais concernées, et on ne retient jamais le défilement.
+  const aimants = Array.from(document.querySelectorAll<HTMLElement>("[data-aimant]"));
+  if (aimants.length && !matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    let minuteur = 0;
+    let doigtPose = false;
+    let dernierePosition = scrollY;
+    let sens = 0; // 1 = on descend, -1 = on remonte
+    addEventListener("touchstart", () => (doigtPose = true), { passive: true });
+    addEventListener("touchend", () => (doigtPose = false), { passive: true });
+
+    const ajuster = () => {
+      if (doigtPose) return;
+      const visible = innerHeight - hauteurEntete();
+      for (const el of aimants) {
+        // trop grande pour être centrée (sauf si elle se cale en haut)
+        if (!el.hasAttribute("data-haut") && el.offsetHeight >= visible * 0.95) continue;
+        const ecart = positionIdeale(el) - scrollY;
+        const distance = Math.abs(ecart);
+        // Seulement si on est déjà proche (moins d'un cinquième d'écran) et pas déjà en place.
+        // Dans le sens où la personne défilait ; en arrière, seulement pour rattraper un tout
+        // petit dépassement (moins d'un dixième d'écran), jamais pour la ramener loin.
+        const memeSens = Math.sign(ecart) === sens;
+        if (distance > 3 && distance < visible * 0.2 && (memeSens || distance < visible * 0.1)) {
+          scrollTo({ top: scrollY + ecart, behavior: "smooth" });
+          return;
+        }
+      }
+    };
+    addEventListener(
+      "scroll",
+      () => {
+        if (scrollY !== dernierePosition) sens = Math.sign(scrollY - dernierePosition);
+        dernierePosition = scrollY;
+        clearTimeout(minuteur);
+        minuteur = window.setTimeout(ajuster, 220); // la personne a arrêté de défiler
+      },
+      { passive: true },
+    );
+  }
 </script>
