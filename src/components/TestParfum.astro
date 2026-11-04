@@ -244,17 +244,21 @@
     document.dispatchEvent(new CustomEvent("filtrer-famille", { detail: lienFamille.dataset.famille }));
   });
 
-  // Le carré apparaît en douceur quand on arrive dessus en faisant défiler la page
+  // Le carré apparaît en douceur quand on arrive dessus en faisant défiler la page.
+  // Sans JavaScript, sans IntersectionObserver ou avec « réduire les animations », il est
+  // simplement affiché (la classe a-reveler n'est jamais ajoutée).
   if ("IntersectionObserver" in window && !matchMedia("(prefers-reduced-motion: reduce)").matches) {
     carre.classList.add("a-reveler");
     const observateur = new IntersectionObserver(
       (entrees) => {
-        if (entrees.some((e) => e.isIntersecting)) {
+        // Déclenché un peu avant d'entrer à l'écran (rootMargin), ou si on l'a déjà dépassé
+        // en défilant très vite : jamais de grand bloc vide.
+        if (entrees.some((e) => e.isIntersecting || e.boundingClientRect.top < 0)) {
           carre.classList.add("revele");
           observateur.disconnect();
         }
       },
-      { threshold: 0.2 },
+      { rootMargin: "0px 0px 20% 0px", threshold: 0 },
     );
     observateur.observe(carre);
   }
@@ -308,8 +312,11 @@
     .resultats :global(h3) { font-size: 1.3rem; margin: 0.1rem 0; }
     .resultats :global(.details) { margin-bottom: 0.2rem; }
   }
-  .carre.a-reveler { opacity: 0; transform: translateY(48px) scale(0.97); transition: opacity 0.8s ease, transform 0.8s ease; }
+  .carre.a-reveler { opacity: 0; transform: translateY(24px) scale(0.98); transition: opacity 0.45s ease-out, transform 0.45s ease-out; }
   .carre.a-reveler.revele { opacity: 1; transform: none; }
+  @media (prefers-reduced-motion: reduce) {
+    .carre.a-reveler { opacity: 1; transform: none; transition: none; }
+  }
 
   .ecran { width: 100%; text-align: center; animation: fondu 0.4s ease; }
   @keyframes fondu { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }

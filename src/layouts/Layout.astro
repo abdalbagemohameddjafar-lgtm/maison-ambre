@@ -126,7 +126,10 @@ const liensLegaux = [
       </div>
 
       <div class="conteneur pied__bas">
-        <p>© {new Date().getFullYear()} Maison Ambre — Site de démonstration</p>
+        <p>
+          © {new Date().getFullYear()} Maison Ambre — Site de démonstration ·{" "}
+          <a href="mailto:pykestudio.contact@gmail.com" class="signature">Site réalisé par Pyke Studio</a>
+        </p>
         <nav class="pied__legal" aria-label="Informations légales">
           {liensLegaux.map((l) => <a href={l.lien}>{l.nom}</a>)}
         </nav>
@@ -229,7 +232,7 @@ const liensLegaux = [
     border-top: 1px solid #3a322c; padding: 1.25rem 0 1.5rem; font-size: 0.72rem; color: #8f8478;
   }
   .pied__legal { display: flex; flex-wrap: wrap; gap: 0.4rem 1.25rem; }
-  .pied__legal a:hover { color: var(--or); text-decoration: underline; text-underline-offset: 3px; }
+  .pied__legal a:hover, .signature:hover { color: var(--or); text-decoration: underline; text-underline-offset: 3px; }
   @media (max-width: 860px) {
     .pied__haut { grid-template-columns: 1fr 1fr; }
     .pied__marque { grid-column: 1 / -1; }

@@ -4,6 +4,12 @@ import { societe, hebergeur } from "../data/societe";
 ---
 
 <PageLegale titre="Mentions légales" description="Mentions légales du site Maison Ambre : éditeur, hébergeur et propriété intellectuelle.">
+  <p class="encadre">
+    <strong>Site fictif réalisé à titre de démonstration.</strong> Maison Ambre n'existe pas : la
+    boutique, les parfums et les informations ci-dessous (société, immatriculation, contacts) sont
+    inventés.
+  </p>
+
   <h2>1. Éditeur du site</h2>
   <p>
     Le site est édité par <strong>{societe.nom}</strong>, {societe.forme} au capital de {societe.capital},
@@ -32,7 +38,7 @@ import { societe, hebergeur } from "../data/societe";
 
   <h2>4. Données personnelles et cookies</h2>
   <p>
-    La manière dont nous traitons vos données est expliquée dans notre
+    La manière dont nous traitons vos données est expliquée dans notre{" "}
     <a href="/politique-de-confidentialite">politique de confidentialité</a>. Ce site n'utilise aucun
     cookie : voir la page <a href="/cookies">Cookies</a>.
   </p>
@@ -46,7 +52,7 @@ import { societe, hebergeur } from "../data/societe";
 
   <h2>6. Liens vers d'autres sites</h2>
   <p>
-    Le site contient des liens vers des réseaux sociaux (Instagram, Facebook, TikTok, YouTube).
+    Le site contient des liens vers des réseaux sociaux (Instagram, Facebook, TikTok, YouTube).{" "}
     {societe.nom} n'est pas responsable du contenu de ces sites, qui ont leurs propres règles de
     confidentialité.
   </p>
