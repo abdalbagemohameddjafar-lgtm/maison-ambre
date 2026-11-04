@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <rect x="25" y="4" width="14" height="10" rx="1.5" fill="#b0823f"/>
+  <rect x="28" y="14" width="8" height="5" fill="#d9b57a"/>
+  <rect x="12" y="19" width="40" height="41" rx="7" fill="#c8873a"/>
+  <rect x="12" y="19" width="40" height="41" rx="7" fill="none" stroke="#1f1a17" stroke-opacity=".15" stroke-width="2"/>
+  <text x="32" y="47" font-family="Georgia, serif" font-style="italic" font-size="20" fill="#fff" text-anchor="middle">MA</text>
+</svg>

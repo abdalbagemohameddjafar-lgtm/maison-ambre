@@ -1,0 +1,21 @@
+---
+import Layout from "../layouts/Layout.astro";
+import Flacon from "../components/Flacon.astro";
+---
+
+<Layout titre="Page introuvable — Maison Ambre" description="Cette page n'existe pas.">
+  <section class="section">
+    <div class="conteneur erreur">
+      <Flacon couleur="#d9d3c7" />
+      <p class="surtitre">Erreur 404</p>
+      <h1 class="titre-section">Cette page s'est évaporée…</h1>
+      <p>Comme un parfum, elle n'a laissé qu'un sillage. Retrouvez notre collection depuis l'accueil.</p>
+      <a href="/" class="bouton">Retour à l'accueil</a>
+    </div>
+  </section>
+</Layout>
+
+<style>
+  .erreur { display: grid; justify-items: center; text-align: center; gap: 1rem; min-height: 55vh; align-content: center; }
+  .erreur p:not(.surtitre) { color: var(--gris); max-width: 42ch; margin-bottom: 1rem; }
+</style>

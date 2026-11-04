@@ -1,0 +1,42 @@
+---
+// Flacon de parfum dessiné en CSS (pas besoin d'images pour la démo).
+interface Props {
+  couleur: string;
+  taille?: "normal" | "grand";
+}
+const { couleur, taille = "normal" } = Astro.props;
+---
+
+<div class:list={["flacon", taille]} style={`--teinte: ${couleur}`} aria-hidden="true">
+  <div class="bouchon"></div>
+  <div class="col"></div>
+  <div class="corps"><span class="etiquette">MA</span></div>
+</div>
+
+<style>
+  .flacon { display: flex; flex-direction: column; align-items: center; --echelle: 1; }
+  .flacon.grand { --echelle: 1.8; }
+  .bouchon {
+    width: calc(34px * var(--echelle)); height: calc(30px * var(--echelle));
+    background: linear-gradient(90deg, #8c6430, #d9b57a, #8c6430);
+    border-radius: 3px 3px 0 0;
+  }
+  .col {
+    width: calc(20px * var(--echelle)); height: calc(10px * var(--echelle));
+    background: color-mix(in srgb, var(--teinte) 60%, white);
+  }
+  .corps {
+    width: calc(96px * var(--echelle)); height: calc(110px * var(--echelle));
+    border-radius: calc(10px * var(--echelle));
+    background:
+      linear-gradient(120deg, rgba(255,255,255,0.55) 0%, rgba(255,255,255,0) 35%),
+      linear-gradient(180deg, color-mix(in srgb, var(--teinte) 70%, white), var(--teinte));
+    box-shadow: inset 0 0 0 2px rgba(255,255,255,0.4), 0 18px 30px -12px rgba(0,0,0,0.35);
+    display: grid; place-items: center;
+  }
+  .etiquette {
+    font-family: var(--serif); font-style: italic;
+    font-size: calc(0.9rem * var(--echelle)); color: rgba(255,255,255,0.9);
+    border: 1px solid rgba(255,255,255,0.7); padding: 0.1em 0.5em;
+  }
+</style>

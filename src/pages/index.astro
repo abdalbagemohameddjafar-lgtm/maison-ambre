@@ -1,0 +1,248 @@
+---
+import Layout from "../layouts/Layout.astro";
+import Flacon from "../components/Flacon.astro";
+import CarteParfum from "../components/CarteParfum.astro";
+import { parfums } from "../data/parfums";
+
+const familles = ["Tous", ...new Set(parfums.map((p) => p.famille))];
+
+const horaires = [
+  ["Lundi", "Fermé"],
+  ["Mardi – Vendredi", "10h00 – 19h00"],
+  ["Samedi", "10h00 – 20h00"],
+  ["Dimanche", "11h00 – 18h00"],
+];
+
+// Fiche « magasin » lue par Google (adresse, téléphone, horaires dans les résultats de recherche)
+const ouverture = (jours: string[], debut: string, fin: string) => ({
+  "@type": "OpeningHoursSpecification",
+  dayOfWeek: jours,
+  opens: debut,
+  closes: fin,
+});
+const magasin = {
+  "@context": "https://schema.org",
+  "@type": "Store",
+  name: "Maison Ambre",
+  description: "Parfumerie de créateur : parfums artisanaux composés à Grasse.",
+  telephone: "+33 1 23 45 67 89",
+  priceRange: "€€",
+  address: {
+    "@type": "PostalAddress",
+    streetAddress: "12 rue des Parfumeurs",
+    postalCode: "75003",
+    addressLocality: "Paris",
+    addressCountry: "FR",
+  },
+  openingHoursSpecification: [
+    ouverture(["Tuesday", "Wednesday", "Thursday", "Friday"], "10:00", "19:00"),
+    ouverture(["Saturday"], "10:00", "20:00"),
+    ouverture(["Sunday"], "11:00", "18:00"),
+  ],
+};
+---
+
+<Layout jsonLd={magasin}>
+  <!-- ===== Bannière d'accueil ===== -->
+  <section class="hero">
+    <div class="conteneur hero__inner">
+      <div class="hero__texte">
+        <p class="surtitre">Parfumerie de créateur · Paris</p>
+        <h1>L'art de laisser <em>une trace</em> inoubliable.</h1>
+        <p class="hero__intro">
+          Des parfums composés à la main à Grasse, avec des matières premières d'exception.
+          Venez découvrir votre signature olfactive en boutique.
+        </p>
+        <div class="hero__actions">
+          <a href="#collection" class="bouton">Découvrir la collection</a>
+          <a href="#boutique" class="bouton bouton--clair">Nous rendre visite</a>
+        </div>
+      </div>
+      <div class="hero__visuel">
+        <div class="halo"></div>
+        <Flacon couleur="#c8873a" taille="grand" />
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== Collection ===== -->
+  <section id="collection" class="section">
+    <div class="conteneur">
+      <div class="entete-section">
+        <p class="surtitre">Nos créations</p>
+        <h2 class="titre-section">La Collection</h2>
+      </div>
+
+      <div class="filtres" role="group" aria-label="Filtrer par famille olfactive">
+        {familles.map((f, i) => (
+          <button class:list={["filtre", { actif: i === 0 }]} data-filtre={f}>{f}</button>
+        ))}
+      </div>
+
+      <div class="grille">
+        {parfums.map((p) => <CarteParfum parfum={p} />)}
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== La Maison ===== -->
+  <section id="maison" class="section maison">
+    <div class="conteneur maison__inner">
+      <div>
+        <p class="surtitre">Notre histoire</p>
+        <h2 class="titre-section">Une maison familiale depuis 1987</h2>
+      </div>
+      <div class="maison__texte">
+        <p>
+          Fondée par une famille de parfumeurs grassois, Maison Ambre compose chaque fragrance
+          en petites séries, dans le respect des savoir-faire traditionnels.
+        </p>
+        <ul class="atouts">
+          <li><strong>100 %</strong> composés à Grasse</li>
+          <li><strong>Conseil</strong> personnalisé en boutique</li>
+          <li><strong>Échantillons</strong> offerts à chaque visite</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== Boutique ===== -->
+  <section id="boutique" class="section">
+    <div class="conteneur boutique">
+      <div>
+        <p class="surtitre">Venir nous voir</p>
+        <h2 class="titre-section">La Boutique</h2>
+        <p class="adresse">12 rue des Parfumeurs<br />75003 Paris<br />Métro Saint-Paul</p>
+        <a
+          class="bouton bouton--clair"
+          href="https://www.google.com/maps/search/?api=1&query=Paris+75003"
+          target="_blank" rel="noopener"
+        >Itinéraire</a>
+      </div>
+      <table class="horaires">
+        <caption>Horaires d'ouverture</caption>
+        <tbody>
+          {horaires.map(([jour, heures]) => (
+            <tr><th scope="row">{jour}</th><td>{heures}</td></tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ===== Contact ===== -->
+  <section id="contact" class="section contact">
+    <div class="conteneur contact__inner">
+      <p class="surtitre">Une question ?</p>
+      <h2 class="titre-section">Écrivez-nous</h2>
+      <form id="formulaire">
+        <div class="ligne">
+          <label>Nom <input name="nom" required autocomplete="name" /></label>
+          <label>E-mail <input name="email" type="email" required autocomplete="email" /></label>
+        </div>
+        <label>Message <textarea name="message" rows="4" required></textarea></label>
+        <p class="rgpd">
+          Vos données servent uniquement à répondre à votre message.
+          <a href="/mentions-legales">En savoir plus</a>
+        </p>
+        <button class="bouton" type="submit">Envoyer</button>
+        <p id="confirmation" class="confirmation" hidden>
+          Merci ! Votre message a bien été envoyé, nous vous répondrons rapidement.
+        </p>
+      </form>
+    </div>
+  </section>
+</Layout>
+
+<script>
+  // Filtre de la collection par famille olfactive
+  const boutons = document.querySelectorAll<HTMLButtonElement>(".filtre");
+  const cartes = document.querySelectorAll<HTMLElement>(".grille > a");
+  boutons.forEach((b) =>
+    b.addEventListener("click", () => {
+      boutons.forEach((x) => x.classList.toggle("actif", x === b));
+      const f = b.dataset.filtre;
+      cartes.forEach((c) => {
+        c.hidden = f !== "Tous" && c.dataset.famille !== f;
+      });
+    }),
+  );
+
+  // Formulaire de démonstration (pas encore relié à un vrai envoi d'e-mail)
+  const form = document.getElementById("formulaire") as HTMLFormElement;
+  form.addEventListener("submit", (e) => {
+    e.preventDefault();
+    form.reset();
+    document.getElementById("confirmation")!.hidden = false;
+  });
+</script>
+
+<style>
+  /* Bannière */
+  .hero { background: linear-gradient(160deg, var(--creme) 40%, var(--sable)); overflow: hidden; }
+  .hero__inner {
+    display: grid; grid-template-columns: 1.2fr 1fr; align-items: center;
+    gap: 2rem; min-height: 78vh; padding: 4rem 0;
+  }
+  h1 { font-size: clamp(2.6rem, 6vw, 4.5rem); margin-bottom: 1.5rem; }
+  h1 em { color: var(--or); }
+  .hero__intro { max-width: 46ch; color: var(--gris); margin-bottom: 2rem; }
+  .hero__actions { display: flex; gap: 1rem; flex-wrap: wrap; }
+  .hero__visuel { position: relative; display: grid; place-items: center; min-height: 380px; }
+  .halo {
+    position: absolute; width: 340px; height: 340px; border-radius: 50%;
+    background: radial-gradient(circle, rgba(200,135,58,0.35), transparent 70%);
+  }
+
+  /* Collection */
+  .entete-section { text-align: center; }
+  .filtres { display: flex; justify-content: center; flex-wrap: wrap; gap: 0.5rem; margin: 1rem 0 2.5rem; }
+  .filtre {
+    background: none; border: 1px solid var(--sable); padding: 0.45rem 1.1rem;
+    font-family: var(--sans); font-size: 0.8rem; cursor: pointer; color: var(--encre);
+    border-radius: 999px; transition: all 0.2s;
+  }
+  .filtre:hover { border-color: var(--or); }
+  .filtre.actif { background: var(--encre); color: var(--creme); border-color: var(--encre); }
+  .grille { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 1.5rem; }
+
+  /* Maison */
+  .maison { background: var(--encre); color: var(--sable); }
+  .maison__inner { display: grid; grid-template-columns: 1fr 1fr; gap: 3rem; align-items: center; }
+  .maison__texte p { color: #cfc5b8; margin-bottom: 2rem; }
+  .atouts { list-style: none; display: grid; gap: 1rem; }
+  .atouts li { border-top: 1px solid #3a322c; padding-top: 1rem; }
+  .atouts strong { font-family: var(--serif); font-size: 1.4rem; font-weight: 400; color: var(--or); margin-right: 0.5rem; }
+
+  /* Boutique */
+  .boutique { display: grid; grid-template-columns: 1fr 1fr; gap: 3rem; align-items: start; }
+  .adresse { margin-bottom: 1.5rem; color: var(--gris); }
+  .horaires { width: 100%; border-collapse: collapse; background: white; }
+  .horaires caption { text-align: left; font-family: var(--serif); font-size: 1.4rem; padding-bottom: 0.75rem; }
+  .horaires th, .horaires td { padding: 0.9rem 1.25rem; border-bottom: 1px solid var(--sable); text-align: left; }
+  .horaires th { font-weight: 500; }
+  .horaires td { text-align: right; color: var(--gris); }
+
+  /* Contact */
+  .contact { background: var(--sable); }
+  .contact__inner { max-width: 680px; text-align: center; }
+  form { display: grid; gap: 1rem; text-align: left; margin-top: 1.5rem; }
+  .ligne { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+  label { display: grid; gap: 0.35rem; font-size: 0.8rem; font-weight: 500; }
+  input, textarea {
+    font: inherit; font-weight: 300; padding: 0.8rem; border: 1px solid #d8ccba;
+    background: var(--creme); color: var(--encre);
+  }
+  input:focus, textarea:focus { outline: 2px solid var(--or); outline-offset: -1px; }
+  form .bouton { justify-self: start; }
+  .confirmation { color: var(--or-fonce); font-weight: 500; }
+  .rgpd { font-size: 0.75rem; color: var(--gris); }
+  .rgpd a { text-decoration: underline; }
+
+  @media (max-width: 800px) {
+    .hero__inner, .maison__inner, .boutique { grid-template-columns: 1fr; }
+    .hero__inner { min-height: auto; }
+    .hero__visuel { min-height: 300px; }
+    .ligne { grid-template-columns: 1fr; }
+  }
+</style>

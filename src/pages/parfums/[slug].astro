@@ -1,0 +1,154 @@
+---
+// Une page est générée automatiquement pour chaque parfum du catalogue.
+import Layout from "../../layouts/Layout.astro";
+import Flacon from "../../components/Flacon.astro";
+import CarteParfum from "../../components/CarteParfum.astro";
+import { parfums, formatPrix, type Parfum } from "../../data/parfums";
+
+export function getStaticPaths() {
+  return parfums.map((parfum) => ({ params: { slug: parfum.slug }, props: { parfum } }));
+}
+
+const { parfum } = Astro.props as { parfum: Parfum };
+const autres = parfums.filter((p) => p.slug !== parfum.slug).slice(0, 3);
+const pyramide = [
+  ["Notes de tête", parfum.notes.tete],
+  ["Notes de cœur", parfum.notes.coeur],
+  ["Notes de fond", parfum.notes.fond],
+] as const;
+
+// Liste officielle des ingrédients (format INCI, imposé sur l'étiquette en Europe)
+const inci = ["Alcohol Denat.", "Parfum (Fragrance)", "Aqua (Water)", ...parfum.allergenes].join(", ");
+
+// Fiche « produit » lue par Google (nom, prix, disponibilité)
+const produit = {
+  "@context": "https://schema.org",
+  "@type": "Product",
+  name: parfum.nom,
+  description: parfum.description,
+  category: `Parfum — ${parfum.famille}`,
+  brand: { "@type": "Brand", name: "Maison Ambre" },
+  offers: {
+    "@type": "Offer",
+    price: parfum.prix,
+    priceCurrency: "EUR",
+    availability: "https://schema.org/InStoreOnly",
+  },
+};
+---
+
+<Layout titre={`${parfum.nom} — Maison Ambre`} description={parfum.description} jsonLd={produit}>
+  <section class="section">
+    <div class="conteneur fiche">
+      <div class="visuel" style={`--teinte: ${parfum.couleur}`}>
+        <Flacon couleur={parfum.couleur} taille="grand" />
+      </div>
+
+      <div class="details">
+        <a href="/#collection" class="retour">← Retour à la collection</a>
+        <p class="surtitre">{parfum.famille}{parfum.nouveau && " · Nouveauté"}</p>
+        <h1>{parfum.nom}</h1>
+        <p class="prix">{formatPrix(parfum.prix)} <span>· {parfum.contenance}</span></p>
+        <p class="description">{parfum.description}</p>
+
+        <dl class="pyramide">
+          {pyramide.map(([titre, notes]) => (
+            <div>
+              <dt>{titre}</dt>
+              <dd>{notes.join(" · ")}</dd>
+            </div>
+          ))}
+        </dl>
+
+        <a href="/#boutique" class="bouton">Le découvrir en boutique</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="section composition">
+    <div class="conteneur composition__inner">
+      <div>
+        <p class="surtitre">Ce que contient le flacon</p>
+        <h2 class="titre-section">Composition</h2>
+        <p class="concentration">
+          <strong>{parfum.concentration.type}</strong> — {parfum.concentration.pourcentage} % de concentré
+          de parfum, le reste étant de l'alcool et de l'eau.
+        </p>
+        <p class="explication">
+          Voici la répartition des ingrédients qui composent le concentré de parfum :
+        </p>
+      </div>
+
+      <ul class="ingredients">
+        {parfum.composition.map(({ ingredient, pourcentage }) => (
+          <li>
+            <div class="ingredient__ligne">
+              <span>{ingredient}</span>
+              <span class="ingredient__pct">{pourcentage} %</span>
+            </div>
+            <div class="barre" style={`--pct: ${pourcentage}%; --teinte: ${parfum.couleur}`}></div>
+          </li>
+        ))}
+      </ul>
+
+      <div class="inci">
+        <h3>Liste des ingrédients (étiquette)</h3>
+        <p>{inci}.</p>
+        <p class="avertissement">
+          Contient des allergènes naturellement présents dans les huiles essentielles. Usage externe
+          uniquement. Tenir hors de portée des enfants. Inflammable.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <section class="section autres">
+    <div class="conteneur">
+      <h2 class="titre-section">Vous aimerez aussi</h2>
+      <div class="grille">
+        {autres.map((p) => <CarteParfum parfum={p} />)}
+      </div>
+    </div>
+  </section>
+</Layout>
+
+<style>
+  .fiche { display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; align-items: center; }
+  .visuel {
+    display: grid; place-items: center; min-height: 480px;
+    background: radial-gradient(circle, color-mix(in srgb, var(--teinte) 30%, transparent), var(--sable) 70%);
+  }
+  .retour { display: inline-block; font-size: 0.8rem; color: var(--gris); margin-bottom: 2rem; }
+  .retour:hover { color: var(--or); }
+  h1 { font-size: clamp(2.5rem, 5vw, 3.75rem); }
+  .prix { font-size: 1.25rem; font-weight: 500; margin: 0.5rem 0 1.5rem; }
+  .prix span { font-weight: 300; color: var(--gris); font-size: 1rem; }
+  .description { color: var(--gris); margin-bottom: 2rem; max-width: 48ch; }
+  .pyramide { display: grid; gap: 0; margin-bottom: 2.5rem; }
+  .pyramide div { display: grid; grid-template-columns: 9rem 1fr; gap: 1rem; padding: 0.9rem 0; border-top: 1px solid var(--sable); }
+  dt { font-size: 0.75rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--or); font-weight: 500; }
+  .composition { border-top: 1px solid var(--sable); }
+  .composition__inner { display: grid; grid-template-columns: 1fr 1.3fr; gap: 2rem 4rem; }
+  .concentration { margin-bottom: 1rem; }
+  .explication { color: var(--gris); }
+  .ingredients { list-style: none; display: grid; gap: 1.1rem; align-self: center; }
+  .ingredient__ligne { display: flex; justify-content: space-between; margin-bottom: 0.35rem; }
+  .ingredient__pct { font-weight: 500; }
+  .barre { height: 6px; background: var(--sable); border-radius: 3px; position: relative; overflow: hidden; }
+  .barre::after {
+    content: ""; position: absolute; inset: 0 auto 0 0; width: var(--pct);
+    background: linear-gradient(90deg, var(--or), var(--teinte)); border-radius: 3px;
+  }
+  .inci { grid-column: 1 / -1; background: white; padding: 1.5rem; font-size: 0.85rem; }
+  .inci h3 { font-size: 1.25rem; margin-bottom: 0.5rem; }
+  .inci p { color: var(--gris); }
+  .avertissement { margin-top: 0.75rem; font-size: 0.75rem; }
+  .autres { background: var(--sable); }
+  .autres h2 { text-align: center; margin-bottom: 2rem; }
+  .grille { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 1.5rem; }
+  @media (max-width: 800px) {
+    .fiche, .composition__inner { grid-template-columns: 1fr; gap: 2rem; }
+    .visuel { min-height: 340px; }
+    .pyramide div { grid-template-columns: 1fr; gap: 0.25rem; }
+  }
+</style>

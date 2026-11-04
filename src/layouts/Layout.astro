@@ -1,0 +1,176 @@
+---
+// Polices hébergées sur le site (plus rapide, et aucune donnée envoyée à Google)
+import "@fontsource/cormorant-garamond/400.css";
+import "@fontsource/cormorant-garamond/400-italic.css";
+import "@fontsource/cormorant-garamond/600.css";
+import "@fontsource/inter/300.css";
+import "@fontsource/inter/400.css";
+import "@fontsource/inter/500.css";
+
+interface Props {
+  titre?: string;
+  description?: string;
+  // Données structurées (schema.org) lues par Google pour enrichir les résultats de recherche
+  jsonLd?: Record<string, unknown>;
+}
+const {
+  titre = "Maison Ambre — Parfumerie",
+  description = "Maison Ambre, parfumerie de créateur : parfums artisanaux composés à Grasse.",
+  jsonLd,
+} = Astro.props;
+---
+
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content={description} />
+    <meta name="theme-color" content="#faf6f0" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <!-- Aperçu quand le lien est partagé (WhatsApp, Facebook, LinkedIn…) -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Maison Ambre" />
+    <meta property="og:title" content={titre} />
+    <meta property="og:description" content={description} />
+    <meta property="og:locale" content="fr_FR" />
+    <title>{titre}</title>
+    {jsonLd && <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />}
+  </head>
+  <body>
+    <a href="#contenu" class="lien-evitement">Aller au contenu</a>
+    <header class="entete">
+      <div class="conteneur entete__inner">
+        <a href="/" class="logo">Maison <span>Ambre</span></a>
+        <button class="menu-btn" aria-expanded="false" aria-controls="navigation" aria-label="Ouvrir le menu">
+          <span></span><span></span><span></span>
+        </button>
+        <nav id="navigation">
+          <a href="/#collection">Collection</a>
+          <a href="/#maison">La Maison</a>
+          <a href="/#boutique">Boutique</a>
+          <a href="/#contact" class="bouton bouton--petit">Nous écrire</a>
+        </nav>
+      </div>
+    </header>
+
+    <main id="contenu">
+      <slot />
+    </main>
+
+    <footer class="pied">
+      <div class="conteneur pied__inner">
+        <p class="logo">Maison <span>Ambre</span></p>
+        <p>12 rue des Parfumeurs, 75003 Paris · 01 23 45 67 89</p>
+        <p class="pied__petit">
+          © {new Date().getFullYear()} Maison Ambre — Site de démonstration ·
+          <a href="/mentions-legales">Mentions légales</a>
+        </p>
+      </div>
+    </footer>
+  </body>
+</html>
+
+<style is:global>
+  :root {
+    --creme: #faf6f0;
+    --sable: #efe6d8;
+    --encre: #1f1a17;
+    --gris: #6f655d;
+    --or: #b0823f;
+    --or-fonce: #8c6430;
+    --serif: "Cormorant Garamond", Georgia, serif;
+    --sans: "Inter", system-ui, sans-serif;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  /* L'attribut hidden doit toujours masquer l'élément, même si un style lui donne display: block */
+  [hidden] { display: none !important; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: var(--sans);
+    font-weight: 300;
+    color: var(--encre);
+    background: var(--creme);
+    line-height: 1.6;
+  }
+  a { color: inherit; text-decoration: none; }
+  h1, h2, h3 { font-family: var(--serif); font-weight: 400; line-height: 1.15; }
+  .conteneur { width: min(1120px, 100% - 2rem); margin-inline: auto; }
+  .section { padding: 5rem 0; }
+  .surtitre {
+    font-size: 0.75rem; letter-spacing: 0.25em; text-transform: uppercase;
+    color: var(--or); font-weight: 500; margin-bottom: 0.75rem;
+  }
+  .titre-section { font-size: clamp(2rem, 4vw, 2.75rem); margin-bottom: 1rem; }
+  .bouton {
+    display: inline-block; padding: 0.85rem 1.8rem; background: var(--encre);
+    color: var(--creme); font-size: 0.8rem; letter-spacing: 0.15em;
+    text-transform: uppercase; border: 1px solid var(--encre);
+    transition: background 0.2s, color 0.2s; cursor: pointer; font-family: var(--sans);
+  }
+  .bouton:hover { background: transparent; color: var(--encre); }
+  .bouton--clair { background: transparent; color: var(--encre); }
+  .bouton--clair:hover { background: var(--encre); color: var(--creme); }
+  .bouton--petit { padding: 0.5rem 1rem; font-size: 0.7rem; }
+  :focus-visible { outline: 2px solid var(--or); outline-offset: 3px; }
+  .lien-evitement {
+    position: absolute; left: 1rem; top: -4rem; z-index: 100;
+    background: var(--encre); color: var(--creme); padding: 0.6rem 1rem;
+  }
+  .lien-evitement:focus { top: 1rem; }
+</style>
+
+<style>
+  .entete {
+    position: sticky; top: 0; z-index: 10;
+    background: rgba(250, 246, 240, 0.92); backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--sable);
+  }
+  .entete__inner {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 1rem; padding: 1rem 0; flex-wrap: wrap;
+  }
+  .logo { font-family: var(--serif); font-size: 1.6rem; letter-spacing: 0.05em; }
+  .logo span { color: var(--or); font-style: italic; }
+  nav { display: flex; align-items: center; gap: 1.5rem; font-size: 0.85rem; flex-wrap: wrap; }
+  nav a:not(.bouton):hover { color: var(--or); }
+  .pied { background: var(--encre); color: var(--sable); padding: 3rem 0; text-align: center; }
+  .pied__inner { display: grid; gap: 0.5rem; }
+  .pied__petit { font-size: 0.75rem; color: var(--gris); margin-top: 1rem; }
+  .pied__petit a { text-decoration: underline; text-underline-offset: 3px; }
+  .pied__petit a:hover { color: var(--or); }
+  /* Bouton « burger » : visible uniquement sur téléphone */
+  .menu-btn {
+    display: none; flex-direction: column; justify-content: center; gap: 5px;
+    width: 42px; height: 42px; background: none; border: none; cursor: pointer; padding: 9px;
+  }
+  .menu-btn span { display: block; height: 1.5px; background: var(--encre); transition: transform 0.25s, opacity 0.25s; }
+  .menu-btn[aria-expanded="true"] span:nth-child(1) { transform: translateY(6.5px) rotate(45deg); }
+  .menu-btn[aria-expanded="true"] span:nth-child(2) { opacity: 0; }
+  .menu-btn[aria-expanded="true"] span:nth-child(3) { transform: translateY(-6.5px) rotate(-45deg); }
+
+  @media (max-width: 720px) {
+    .menu-btn { display: flex; }
+    nav {
+      display: none; width: 100%; flex-direction: column; align-items: stretch;
+      gap: 0; padding: 0.5rem 0 1rem; font-size: 1rem;
+    }
+    nav.ouvert { display: flex; }
+    nav a:not(.bouton) { padding: 0.85rem 0; border-bottom: 1px solid var(--sable); }
+    nav .bouton { margin-top: 1rem; text-align: center; padding: 0.85rem; }
+  }
+</style>
+
+<script>
+  // Ouverture / fermeture du menu sur téléphone
+  const bouton = document.querySelector<HTMLButtonElement>(".menu-btn")!;
+  const nav = document.getElementById("navigation")!;
+  const basculer = (ouvrir: boolean) => {
+    nav.classList.toggle("ouvert", ouvrir);
+    bouton.setAttribute("aria-expanded", String(ouvrir));
+    bouton.setAttribute("aria-label", ouvrir ? "Fermer le menu" : "Ouvrir le menu");
+  };
+  bouton.addEventListener("click", () => basculer(!nav.classList.contains("ouvert")));
+  // Referme le menu quand on choisit une rubrique
+  nav.querySelectorAll("a").forEach((a) => a.addEventListener("click", () => basculer(false)));
+</script>

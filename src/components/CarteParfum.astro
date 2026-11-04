@@ -1,0 +1,39 @@
+---
+import Flacon from "./Flacon.astro";
+import { formatPrix, type Parfum } from "../data/parfums";
+
+interface Props {
+  parfum: Parfum;
+}
+const { parfum } = Astro.props;
+---
+
+<a href={`/parfums/${parfum.slug}`} class="carte" data-famille={parfum.famille}>
+  <div class="visuel">
+    {parfum.nouveau && <span class="badge">Nouveau</span>}
+    <Flacon couleur={parfum.couleur} />
+  </div>
+  <div class="infos">
+    <p class="famille">{parfum.famille}</p>
+    <h3>{parfum.nom}</h3>
+    <p class="prix">{formatPrix(parfum.prix)} <span>· {parfum.contenance}</span></p>
+  </div>
+</a>
+
+<style>
+  .carte { display: block; background: white; transition: transform 0.25s, box-shadow 0.25s; }
+  .carte:hover { transform: translateY(-4px); box-shadow: 0 20px 40px -20px rgba(31,26,23,0.3); }
+  .visuel {
+    position: relative; display: grid; place-items: center;
+    padding: 2.5rem 1rem; background: var(--sable);
+  }
+  .badge {
+    position: absolute; top: 1rem; left: 1rem; background: var(--encre); color: var(--creme);
+    font-size: 0.65rem; letter-spacing: 0.15em; text-transform: uppercase; padding: 0.3rem 0.6rem;
+  }
+  .infos { padding: 1.25rem 1.25rem 1.5rem; text-align: center; }
+  .famille { font-size: 0.7rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--or); }
+  h3 { font-size: 1.6rem; margin: 0.25rem 0; }
+  .prix { font-weight: 500; }
+  .prix span { font-weight: 300; color: var(--gris); font-size: 0.85rem; }
+</style>
