@@ -5,6 +5,9 @@ import CarteParfum from "../components/CarteParfum.astro";
 import TestParfum from "../components/TestParfum.astro";
 import { parfums, familles } from "../data/parfums";
 
+// Clé Web3Forms (fichier .env) : vide = formulaire en mode démo
+const cleWeb3Forms = import.meta.env.PUBLIC_WEB3FORMS_KEY ?? "";
+
 // Paliers du filtre de prix de la collection (« Moins de … € »)
 const plafonds = [50, 70, 90, 110, 130];
 
@@ -194,21 +197,25 @@ const magasin = {
     <div class="conteneur contact__inner">
       <p class="surtitre">Une question ?</p>
       <h2 class="titre-section">Écrivez-nous</h2>
+      <!--
+        Envoi via Web3Forms : la clé d'accès vient du fichier .env (PUBLIC_WEB3FORMS_KEY).
+        L'adresse qui reçoit les messages est réglée chez Web3Forms, jamais dans le code.
+        Sans clé, le formulaire fonctionne en mode démo (rien n'est envoyé).
+      -->
       <form
         id="formulaire"
         name="contact"
         method="POST"
-        action="https://formsubmit.co/pykestudio.contact@gmail.com"
-        data-ajax="https://formsubmit.co/ajax/pykestudio.contact@gmail.com"
+        action={cleWeb3Forms ? "https://api.web3forms.com/submit" : undefined}
+        data-cle={cleWeb3Forms}
       >
-        <!-- Site de démonstration : les messages arrivent chez Pyke Studio via FormSubmit -->
-        <input type="hidden" name="_subject" value="[Démo Maison Ambre] Nouveau message" />
-        <input type="hidden" name="_next" value="https://maison-ambre.pages.dev/#contact" />
-        <input type="hidden" name="_template" value="table" />
-        <input type="hidden" name="_captcha" value="false" />
-        <!-- Piège anti-spam : champ invisible, seuls les robots le remplissent -->
+        {cleWeb3Forms && <input type="hidden" name="access_key" value={cleWeb3Forms} />}
+        <input type="hidden" name="subject" value="[Démo Maison Ambre] Nouveau message" />
+        <input type="hidden" name="from_name" value="Site Maison Ambre" />
+        <input type="hidden" name="redirect" value={new URL("/#contact", Astro.site).href} />
+        <!-- Piège anti-spam (honeypot Web3Forms) : case invisible, seuls les robots la cochent -->
         <p class="piege" aria-hidden="true">
-          <label>Ne pas remplir <input name="_honey" tabindex="-1" autocomplete="off" /></label>
+          <label>Ne pas cocher <input type="checkbox" name="botcheck" tabindex="-1" autocomplete="off" /></label>
         </p>
         <div class="ligne">
           <label>Nom <input name="nom" required autocomplete="name" /></label>
@@ -340,8 +347,9 @@ const magasin = {
 
   appliquer();
 
-  // ===== Formulaire de contact (FormSubmit) =====
-  // Envoi sans recharger la page. Sans JavaScript, le formulaire est envoyé normalement à FormSubmit.
+  // ===== Formulaire de contact (Web3Forms) =====
+  // La validation (champs requis, format de l'e-mail) est faite par le navigateur avant cet événement.
+  // Envoi sans recharger la page. Sans JavaScript, le formulaire est envoyé normalement à Web3Forms.
   const form = document.getElementById("formulaire") as HTMLFormElement;
   const boutonEnvoi = form.querySelector<HTMLButtonElement>("button[type='submit']")!;
   const etatEnvoi = document.getElementById("etat-envoi")!;
@@ -349,21 +357,39 @@ const magasin = {
     etatEnvoi.textContent = texte;
     etatEnvoi.dataset.type = type;
   };
+  const cle = form.dataset.cle ?? "";
+  const merci = "Merci ! Votre message a bien été envoyé, nous vous répondrons rapidement.";
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
+    // Piège coché = robot : on fait semblant d'avoir réussi, sans rien envoyer
+    const piege = form.elements.namedItem("botcheck") as HTMLInputElement | null;
+    if (piege?.checked) {
+      form.reset();
+      afficherEtat(merci, "succes");
+      return;
+    }
     boutonEnvoi.disabled = true;
     boutonEnvoi.textContent = "Envoi en cours…";
     afficherEtat("", "");
     try {
-      const reponse = await fetch(form.dataset.ajax!, {
+      if (!cle) {
+        // Mode démo (aucune clé Web3Forms configurée) : on simule l'envoi
+        await new Promise((r) => setTimeout(r, 600));
+        form.reset();
+        afficherEtat(`${merci} (Démonstration : aucun message n'a réellement été envoyé.)`, "succes");
+        return;
+      }
+      const donnees = Object.fromEntries(new FormData(form));
+      delete donnees.redirect; // utile seulement sans JavaScript
+      const reponse = await fetch("https://api.web3forms.com/submit", {
         method: "POST",
-        headers: { Accept: "application/json" },
-        body: new FormData(form),
+        headers: { "Content-Type": "application/json", Accept: "application/json" },
+        body: JSON.stringify(donnees),
       });
       const json = await reponse.json().catch(() => ({}));
-      if (!reponse.ok || String(json.success) !== "true") throw new Error(`HTTP ${reponse.status}`);
+      if (!reponse.ok || json.success !== true) throw new Error(`HTTP ${reponse.status}`);
       form.reset();
-      afficherEtat("Merci ! Votre message a bien été envoyé, nous vous répondrons rapidement.", "succes");
+      afficherEtat(merci, "succes");
     } catch {
       afficherEtat(
         "Désolé, le message n'a pas pu être envoyé. Réessayez dans un instant ou appelez-nous au 01 23 45 67 89.",

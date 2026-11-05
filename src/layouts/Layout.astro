@@ -99,7 +99,7 @@ const liensLegaux = [
           <ul class="reseaux" aria-label="Maison Ambre sur les réseaux sociaux">
             {reseaux.map((r) => (
               <li>
-                <a href={r.lien} target="_blank" rel="noopener" aria-label={`${r.nom} (nouvel onglet)`} title={r.nom}>
+                <a href={r.lien} target="_blank" rel="noopener" aria-label={`${r.nom} de Maison Ambre (nouvel onglet)`} title={r.nom}>
                   <svg viewBox="0 0 24 24" aria-hidden="true" set:html={r.icone} />
                 </a>
               </li>
@@ -128,7 +128,7 @@ const liensLegaux = [
       <div class="conteneur pied__bas">
         <p>
           © {new Date().getFullYear()} Maison Ambre — Site de démonstration ·{" "}
-          <a href="mailto:pykestudio.contact@gmail.com" class="signature">Site réalisé par Pyke Studio</a>
+          <a href="https://pykestudio.fr" class="signature">Site réalisé par Pyke Studio</a>
         </p>
         <nav class="pied__legal" aria-label="Informations légales">
           {liensLegaux.map((l) => <a href={l.lien}>{l.nom}</a>)}

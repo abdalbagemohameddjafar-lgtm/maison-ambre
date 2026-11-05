@@ -15,7 +15,7 @@ import { societe, hebergeur } from "../data/societe";
     Pour toute question : {societe.email}.
   </p>
 
-  <h2>2. Données collectées et utilisation</h2>
+  <h2>2. Données collectées</h2>
   <div class="tableau">
   <table>
     <thead>
@@ -43,20 +43,43 @@ import { societe, hebergeur } from "../data/societe";
     </tbody>
   </table>
   </div>
+
+  <h2>3. Finalité</h2>
+  <p>
+    Vos données servent uniquement à répondre à votre message et, si vous le souhaitez, à poursuivre
+    l'échange (conseil, disponibilité d'un parfum, rendez-vous en boutique). Nous ne les utilisons pas à
+    des fins publicitaires et nous ne les vendons jamais.
+  </p>
+
+  <h2>4. Base légale</h2>
   <p>
     Le traitement des messages repose sur notre intérêt légitime à répondre aux personnes qui nous
-    contactent (article 6.1.f du RGPD). Nous n'utilisons pas vos données à des fins publicitaires et
-    nous ne les vendons jamais.
+    contactent (article 6.1.f du RGPD).
   </p>
 
-  <h2>3. Qui a accès à vos données ?</h2>
+  <h2>5. Destinataires</h2>
+  <ul>
+    <li>L'équipe de {societe.nom}, seule à lire vos messages.</li>
+    <li>
+      <strong>Web3Forms</strong>, prestataire technique qui transmet le formulaire de contact par e-mail
+      (<a href="https://web3forms.com/privacy" target="_blank" rel="noopener">politique de confidentialité de Web3Forms</a>).
+    </li>
+    <li>
+      <strong>{hebergeur.nom}</strong>, hébergeur du site, qui traite les données techniques de navigation.
+    </li>
+  </ul>
   <p>
-    Seule l'équipe de {societe.nom} lit vos messages. Le site est hébergé par {hebergeur.nom}, dont les
-    serveurs peuvent se trouver hors de l'Union européenne ; ces transferts sont encadrés par les
-    garanties prévues par le RGPD (clauses contractuelles types de la Commission européenne).
+    Ces prestataires peuvent traiter des données hors de l'Union européenne. Ces transferts sont encadrés
+    par les garanties prévues par le RGPD (clauses contractuelles types de la Commission européenne).
   </p>
 
-  <h2>4. Vos droits</h2>
+  <h2>6. Durée de conservation</h2>
+  <p>
+    Les messages reçus par le formulaire sont conservés 3 ans après notre dernier échange, puis supprimés.
+    Le test « Le parfum pour vous » n'enregistre rien.
+  </p>
+
+  <h2>7. Vos droits</h2>
   <p>Vous pouvez à tout moment :</p>
   <ul>
     <li>accéder à vos données et en obtenir une copie ;</li>
@@ -66,11 +89,16 @@ import { societe, hebergeur } from "../data/societe";
   </ul>
   <p>
     Pour exercer ces droits, écrivez à {societe.email} ou à l'adresse de la boutique. Nous répondons
-    sous un mois. Si vous estimez que vos droits ne sont pas respectés, vous pouvez adresser une
-    réclamation à la CNIL (<a href="https://www.cnil.fr" target="_blank" rel="noopener">www.cnil.fr</a>).
+    sous un mois.
   </p>
 
-  <h2>5. Sécurité</h2>
+  <h2>8. Réclamation auprès de la CNIL</h2>
+  <p>
+    Si vous estimez que vos droits ne sont pas respectés, vous pouvez adresser une réclamation à la
+    CNIL (<a href="https://www.cnil.fr/fr/plaintes" target="_blank" rel="noopener">www.cnil.fr/fr/plaintes</a>).
+  </p>
+
+  <h2>9. Sécurité</h2>
   <p>
     Le site est servi en connexion chiffrée (HTTPS). Les polices d'écriture et toutes les ressources sont
     hébergées sur le site lui-même : aucune donnée de navigation n'est envoyée à des services tiers.

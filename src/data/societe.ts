@@ -5,9 +5,10 @@ export const societe = {
   forme: "SARL",
   capital: "20 000 €",
   adresse: "12 rue des Parfumeurs, 75003 Paris",
-  rcs: "RCS Paris 912 345 678",
-  siret: "912 345 678 00017",
-  tva: "FR 47 912 345 678",
+  // Numéros volontairement fictifs (que des zéros) : à remplacer pour un vrai client
+  rcs: "RCS Paris 000 000 000",
+  siret: "000 000 000 00000",
+  tva: "FR 00 000 000 000",
   telephone: "01 23 45 67 89",
   email: "contact@maison-ambre.fr",
   directeur: "Claire Vasseur, gérante",
