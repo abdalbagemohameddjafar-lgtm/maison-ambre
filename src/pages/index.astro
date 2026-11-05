@@ -67,9 +67,10 @@ const magasin = {
           <a href="#boutique" class="bouton bouton--clair">Nous rendre visite</a>
         </div>
       </div>
-      <div class="hero__visuel">
+      <div class="hero__visuel" id="flacon3d">
         <div class="halo"></div>
-        <Flacon couleur="#c8873a" taille="grand" />
+        <!-- Flacon CSS : affiché pendant le chargement de la 3D, et en repli sans WebGL -->
+        <div class="flacon3d__repli"><Flacon couleur="#c8873a" taille="grand" /></div>
       </div>
     </div>
   </section>
@@ -375,6 +376,33 @@ const magasin = {
   });
 </script>
 
+<script>
+  // Flacon 3D : chargé à la demande (import dynamique), seulement si WebGL fonctionne.
+  const zone = document.getElementById('flacon3d');
+  const webgl = (() => {
+    try {
+      const c = document.createElement('canvas');
+      return !!(window.WebGLRenderingContext && (c.getContext('webgl2') || c.getContext('webgl')));
+    } catch {
+      return false;
+    }
+  })();
+  if (zone && webgl) {
+    const lancer = async () => {
+      const { monterFlacon } = await import('../scripts/flacon3d.ts');
+      await monterFlacon(zone, {
+        couleur: '#c8873a', // l'ambre du flacon CSS du flacon CSS (#c8873a), un ton plus profond une fois éclairé
+        calme: matchMedia('(prefers-reduced-motion: reduce)').matches,
+        fond: zone.closest('.hero') as HTMLElement, // le verre réfracte le fond de la bannière
+      });
+      zone.classList.add('flacon3d--pret'); // fondu : la 3D remplace le flacon CSS
+    };
+    // Après le premier affichage, pour ne pas retarder le texte de la bannière
+    const quand = (window as any).requestIdleCallback || ((f: () => void) => setTimeout(f, 200));
+    quand(() => lancer().catch(() => {/* en cas d'échec, le flacon CSS reste affiché */}), { timeout: 1500 });
+  }
+</script>
+
 <style>
   /* Bannière */
   .hero { background: linear-gradient(160deg, var(--creme) 40%, var(--sable)); overflow: hidden; }
@@ -391,6 +419,20 @@ const magasin = {
     position: absolute; width: 340px; height: 340px; border-radius: 50%;
     background: radial-gradient(circle, rgba(200,135,58,0.35), transparent 70%);
   }
+  /* Flacon 3D : le canvas se superpose au flacon CSS, puis le remplace en fondu (aucun décalage) */
+  .flacon3d__repli { position: relative; transition: opacity 0.8s cubic-bezier(.2,.7,.2,1); }
+  .hero__visuel :global(.flacon3d__canvas) {
+    position: absolute; inset: 0; width: 100%; height: 100%;
+    opacity: 0; transition: opacity 0.8s cubic-bezier(.2,.7,.2,1);
+    cursor: grab;
+    /* bords fondus : le cadre de la 3D se dissout dans le fond de la bannière */
+    -webkit-mask-image: radial-gradient(ellipse 50% 50% at 50% 50%, #000 72%, transparent 100%);
+    mask-image: radial-gradient(ellipse 50% 50% at 50% 50%, #000 72%, transparent 100%);
+  }
+  .hero__visuel :global(.flacon3d__canvas.saisi) { cursor: grabbing; }
+  .flacon3d--pret .flacon3d__repli, .flacon3d--pret .halo { opacity: 0; } /* le halo est redessiné dans la 3D */
+  .halo { transition: opacity 0.8s cubic-bezier(.2,.7,.2,1); }
+  .flacon3d--pret :global(.flacon3d__canvas) { opacity: 1; }
 
   /* Collection */
   .entete-section { text-align: center; }
